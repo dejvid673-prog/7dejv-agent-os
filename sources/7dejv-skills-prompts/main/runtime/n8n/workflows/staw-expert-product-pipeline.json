@@ -1,0 +1,85 @@
+{
+  "name": "STAW EXPERT Product Pipeline - Runtime Skeleton",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-640, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "product-id", "name": "product_id", "value": "=SE-RND-{{$now.toFormat('yyyyLLddHHmmss')}}", "type": "string"},
+            {"id": "schema-version", "name": "schema_version", "value": "1.0.0", "type": "string"},
+            {"id": "stage", "name": "stage", "value": "DISCOVERED", "type": "string"},
+            {"id": "status", "name": "status", "value": "HOLD", "type": "string"},
+            {"id": "input-version", "name": "input_version", "value": "1", "type": "string"},
+            {"id": "human-review", "name": "human_review_required", "value": false, "type": "boolean"},
+            {"id": "retry-count", "name": "retry_count", "value": 0, "type": "number"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "initialize-contract",
+      "name": "Initialize Contract",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-400, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nreturn items.map(item => ({ json: { ...item.json, source_urls: [], evidence: [], assumptions: [], missing_data: ['runtime input not supplied'], risks: [], agent_output: null, approval: null, next_stage: null, created_at: now, updated_at: now } }));"
+      },
+      "id": "normalize-contract",
+      "name": "Normalize Contract",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {"conditions": {"options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"}, "conditions": [{"leftValue": "={{$json.status}}", "rightValue": "PASS", "operator": {"type": "string", "operation": "equals"}}], "combinator": "and"}, "renameOutput": true, "outputKey": "PASS"},
+            {"conditions": {"options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"}, "conditions": [{"leftValue": "={{$json.status}}", "rightValue": "WAITING_APPROVAL", "operator": {"type": "string", "operation": "equals"}}], "combinator": "and"}, "renameOutput": true, "outputKey": "WAITING_APPROVAL"}
+          ]
+        },
+        "options": {"fallbackOutput": "extra"}
+      },
+      "id": "route-status",
+      "name": "Route Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [80, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {"assignments": [{"id": "runtime-result", "name": "runtime_result", "value": "STATIC_RUNTIME_SKELETON_ONLY", "type": "string"}]},
+        "options": {}
+      },
+      "id": "stop-safely",
+      "name": "Stop Safely",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [360, 120]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node": "Initialize Contract", "type": "main", "index": 0}]]},
+    "Initialize Contract": {"main": [[{"node": "Normalize Contract", "type": "main", "index": 0}]]},
+    "Normalize Contract": {"main": [[{"node": "Route Status", "type": "main", "index": 0}]]},
+    "Route Status": {"main": [[], [], [{"node": "Stop Safely", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "settings": {"executionOrder": "v1", "saveManualExecutions": true},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-07-16T00:00:00.000Z",
+  "versionId": "00000000-0000-4000-8000-000000000001",
+  "active": false
+}

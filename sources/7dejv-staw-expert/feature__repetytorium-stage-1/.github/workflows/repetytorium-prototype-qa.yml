@@ -1,0 +1,187 @@
+name: Repetytorium prototype QA
+
+on:
+  push:
+    branches:
+      - feature/repetytorium-stage-1
+    paths:
+      - "12_repetytorium-wiedzy/prototype-html/**"
+      - ".github/scripts/repetytorium-render.mjs"
+      - ".github/workflows/repetytorium-prototype-qa.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "12_repetytorium-wiedzy/prototype-html/**"
+      - ".github/scripts/repetytorium-render.mjs"
+      - ".github/workflows/repetytorium-prototype-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Static HTML and link audit
+        shell: bash
+        run: |
+          mkdir -p qa-output
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import sys
+
+          root = Path("12_repetytorium-wiedzy/prototype-html")
+          html_files = sorted(root.glob("*.html"))
+          errors = []
+          warnings = []
+          checked = []
+
+          class AuditParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = []
+                  self.images = []
+                  self.lang = None
+                  self.title_depth = 0
+                  self.title_text = []
+                  self.h1_count = 0
+
+              def handle_starttag(self, tag, attrs):
+                  data = dict(attrs)
+                  if tag == "html":
+                      self.lang = data.get("lang")
+                  elif tag == "a" and data.get("href"):
+                      self.links.append(data["href"])
+                  elif tag == "img":
+                      self.images.append((data.get("src"), data.get("alt")))
+                  elif tag == "title":
+                      self.title_depth += 1
+                  elif tag == "h1":
+                      self.h1_count += 1
+
+              def handle_endtag(self, tag):
+                  if tag == "title" and self.title_depth:
+                      self.title_depth -= 1
+
+              def handle_data(self, data):
+                  if self.title_depth:
+                      self.title_text.append(data.strip())
+
+          for path in html_files:
+              parser = AuditParser()
+              parser.feed(path.read_text(encoding="utf-8"))
+              checked.append(path.name)
+
+              if parser.lang != "pl":
+                  errors.append(f"{path.name}: brak html lang=pl")
+              if not "".join(parser.title_text).strip():
+                  errors.append(f"{path.name}: pusty lub brakujący title")
+              if parser.h1_count != 1:
+                  errors.append(f"{path.name}: oczekiwano jednego h1, znaleziono {parser.h1_count}")
+
+              for src, alt in parser.images:
+                  if not src:
+                      errors.append(f"{path.name}: img bez src")
+                      continue
+                  if alt is None or not alt.strip():
+                      errors.append(f"{path.name}: obraz {src} bez tekstu alternatywnego")
+                  target = (path.parent / src).resolve()
+                  if not target.exists():
+                      errors.append(f"{path.name}: brak zasobu obrazu {src}")
+
+              for href in parser.links:
+                  parsed = urlparse(href)
+                  if parsed.scheme or href.startswith(("#", "mailto:", "tel:")):
+                      continue
+                  relative = parsed.path
+                  if not relative:
+                      continue
+                  target = (path.parent / relative).resolve()
+                  if target.is_dir():
+                      target = target / "index.html"
+                  if not target.exists():
+                      errors.append(f"{path.name}: martwy link {href}")
+
+          css = root / "assets/css/style.css"
+          if not css.exists():
+              errors.append("brak głównego pliku CSS")
+
+          report = [
+              "# Static prototype QA",
+              "",
+              f"Sprawdzone pliki HTML: {len(checked)}",
+              "",
+              "## Pliki",
+              *[f"- {name}" for name in checked],
+              "",
+              "## Błędy",
+              *([f"- {item}" for item in errors] or ["- Brak"]),
+              "",
+              "## Ostrzeżenia",
+              *([f"- {item}" for item in warnings] or ["- Brak"]),
+          ]
+          Path("qa-output/static-audit.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+
+          if errors:
+              print("\n".join(errors), file=sys.stderr)
+              sys.exit(1)
+          PY
+
+      - name: Install Chromium test runtime
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Render pages and capture screenshots
+        shell: bash
+        run: |
+          ROOT="12_repetytorium-wiedzy/prototype-html"
+          python3 -m http.server 4173 --directory "$ROOT" >qa-output/http-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+
+          SERVER_READY=0
+          for attempt in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then
+              SERVER_READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$SERVER_READY" -ne 1 ]; then
+            echo "Lokalny serwer prototypu nie uruchomił się" >&2
+            exit 1
+          fi
+
+          node .github/scripts/repetytorium-render.mjs
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repetytorium-prototype-qa
+          path: qa-output/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,101 @@
+name: Skill Quality
+
+on:
+  pull_request:
+    paths:
+      - "02_skills/**"
+      - "03_agents/**"
+      - "04_workflows/**"
+      - "runtime/**"
+      - "security/**"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/skill-quality.yml"
+  push:
+    branches:
+      - main
+      - "feat/**"
+    paths:
+      - "02_skills/**"
+      - "03_agents/**"
+      - "04_workflows/**"
+      - "runtime/**"
+      - "security/**"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/skill-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run validator unit tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Validate all skills
+        run: |
+          python scripts/validate_skills.py \
+            --root . \
+            --skills-dir 02_skills \
+            --json-report artifacts/skill-lint-report.json \
+            --markdown-report artifacts/skill-lint-report.md \
+            --fail-on error
+
+      - name: Validate evaluation suites
+        run: python scripts/validate_evals.py --root .
+
+      - name: Validate contracts and routing
+        run: python scripts/validate_contracts.py
+
+      - name: Run security audit
+        run: python scripts/security_audit.py --root . --json-report artifacts/security-audit.json
+
+      - name: Validate runtime artifacts
+        run: python scripts/validate_runtime.py --root .
+
+      - name: Generate repository registries and readiness
+        run: |
+          python scripts/repository_governance.py \
+            --root . \
+            --output-dir registry \
+            --report artifacts/repository-governance-report.json
+
+      - name: Add reports to workflow summary
+        if: always()
+        run: |
+          if [ -f artifacts/skill-lint-report.md ]; then
+            cat artifacts/skill-lint-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          for report in artifacts/security-audit.json artifacts/repository-governance-report.json; do
+            if [ -f "$report" ]; then
+              echo "## $(basename "$report")" >> "$GITHUB_STEP_SUMMARY"
+              echo '```json' >> "$GITHUB_STEP_SUMMARY"
+              cat "$report" >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+      - name: Upload audit reports and registries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-quality-report
+          path: |
+            artifacts/
+            registry/
+          if-no-files-found: warn
+          retention-days: 30

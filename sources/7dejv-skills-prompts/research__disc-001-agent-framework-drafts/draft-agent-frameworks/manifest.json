@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0.0",
+  "collection": "draft-agent-frameworks",
+  "description": "Pinned external agent framework projects retained for research only.",
+  "status_definitions": {
+    "RESEARCH_ONLY": "May be used only as research material.",
+    "NOT_APPROVED": "Not approved for use, integration or release.",
+    "DO_NOT_EXECUTE": "Do not execute project code, scripts, tests or installers.",
+    "UPSTREAM_PINNED": "Pinned to the recorded immutable upstream commit."
+  },
+  "projects": [
+    {
+      "name": "openai/openai-agents-python",
+      "source": "https://github.com/openai/openai-agents-python.git",
+      "path": "draft-agent-frameworks/openai-agents-python",
+      "commit": "697a46c4baa268d78d31c44244144967e57786b9",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "scope": "repository",
+          "evidence": "https://github.com/openai/openai-agents-python/blob/697a46c4baa268d78d31c44244144967e57786b9/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "microsoft/agent-framework",
+      "source": "https://github.com/microsoft/agent-framework.git",
+      "path": "draft-agent-frameworks/agent-framework",
+      "commit": "f4e49958f3c7a30b78991a894080be397044e698",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "scope": "repository",
+          "evidence": "https://github.com/microsoft/agent-framework/blob/f4e49958f3c7a30b78991a894080be397044e698/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "langchain-ai/langgraph",
+      "source": "https://github.com/langchain-ai/langgraph.git",
+      "path": "draft-agent-frameworks/langgraph",
+      "commit": "49ae27c2ae983cfb92091b0dea9f7bc37a716479",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "scope": "repository",
+          "evidence": "https://github.com/langchain-ai/langgraph/blob/49ae27c2ae983cfb92091b0dea9f7bc37a716479/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "microsoft/autogen",
+      "source": "https://github.com/microsoft/autogen.git",
+      "path": "draft-agent-frameworks/autogen",
+      "commit": "027ecf0a379bcc1d09956d46d12d44a3ad9cee14",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "scope": "code",
+          "evidence": "https://github.com/microsoft/autogen/blob/027ecf0a379bcc1d09956d46d12d44a3ad9cee14/LICENSE-CODE"
+        },
+        {
+          "spdx": "CC-BY-4.0",
+          "scope": "other_materials",
+          "evidence": "https://github.com/microsoft/autogen/blob/027ecf0a379bcc1d09956d46d12d44a3ad9cee14/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "google/adk-python",
+      "source": "https://github.com/google/adk-python.git",
+      "path": "draft-agent-frameworks/adk-python",
+      "commit": "c9bacd40ee4f8ad9951d543b240ce3f2f59ebb42",
+      "licenses": [
+        {
+          "spdx": "Apache-2.0",
+          "scope": "repository",
+          "evidence": "https://github.com/google/adk-python/blob/c9bacd40ee4f8ad9951d543b240ce3f2f59ebb42/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "pydantic/pydantic-ai",
+      "source": "https://github.com/pydantic/pydantic-ai.git",
+      "path": "draft-agent-frameworks/pydantic-ai",
+      "commit": "0f0b4c51f8edb91458af5b62d7a58d0e25621788",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "scope": "repository",
+          "evidence": "https://github.com/pydantic/pydantic-ai/blob/0f0b4c51f8edb91458af5b62d7a58d0e25621788/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "ag2ai/ag2",
+      "source": "https://github.com/ag2ai/ag2.git",
+      "path": "draft-agent-frameworks/ag2",
+      "commit": "84f8ba366b0b6d8b6f53549855cd8a7bf769eb04",
+      "licenses": [
+        {
+          "spdx": "Apache-2.0",
+          "scope": "repository",
+          "evidence": "https://github.com/ag2ai/ag2/blob/84f8ba366b0b6d8b6f53549855cd8a7bf769eb04/LICENSE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    },
+    {
+      "name": "strands-agents/harness-sdk",
+      "source": "https://github.com/strands-agents/harness-sdk.git",
+      "path": "draft-agent-frameworks/harness-sdk",
+      "commit": "8658b9e0d57427b77b69343262184d76d8e63e8f",
+      "licenses": [
+        {
+          "spdx": "Apache-2.0",
+          "scope": "repository",
+          "evidence": "https://github.com/strands-agents/harness-sdk/blob/8658b9e0d57427b77b69343262184d76d8e63e8f/LICENSE.APACHE"
+        }
+      ],
+      "statuses": ["RESEARCH_ONLY", "NOT_APPROVED", "DO_NOT_EXECUTE", "UPSTREAM_PINNED"]
+    }
+  ]
+}

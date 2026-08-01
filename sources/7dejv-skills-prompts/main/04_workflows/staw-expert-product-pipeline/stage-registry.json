@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "workflow": "staw-expert-product-pipeline",
+  "stages": {
+    "DISCOVERED": {"handler": "7dejv-market-research-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "source_urls"], "next_stages": ["SHORTLISTED"], "human_gate": false, "terminal": false},
+    "SHORTLISTED": {"handler": "7dejv-market-research-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "evidence"], "next_stages": ["ANALYZED"], "human_gate": false, "terminal": false},
+    "ANALYZED": {"handler": "7dejv-offer-analysis-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "source_urls", "evidence"], "next_stages": ["COMPOSITION_EVIDENCE"], "human_gate": false, "terminal": false},
+    "COMPOSITION_EVIDENCE": {"handler": "7dejv-composition-evidence-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "evidence"], "next_stages": ["FORMULATION_DRAFT"], "human_gate": false, "terminal": false},
+    "FORMULATION_DRAFT": {"handler": "7dejv-formulation-brief-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "evidence", "risks"], "next_stages": ["DOSAGE_TEST_PLAN"], "human_gate": false, "terminal": false},
+    "DOSAGE_TEST_PLAN": {"handler": "7dejv-dosage-test-planning-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR", "WAITING_APPROVAL"], "required_fields": ["product_id", "risks"], "next_stages": ["HUMAN_LAB_REVIEW"], "human_gate": true, "terminal": false},
+    "HUMAN_LAB_REVIEW": {"handler": "HUMAN_REVIEW", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "WAITING_APPROVAL"], "required_fields": ["product_id", "approval"], "next_stages": ["NAMING_DRAFT"], "human_gate": true, "terminal": false},
+    "NAMING_DRAFT": {"handler": "7dejv-product-naming-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id"], "next_stages": ["COPY_DRAFT"], "human_gate": false, "terminal": false},
+    "COPY_DRAFT": {"handler": "7dejv-product-copy-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id", "evidence", "risks"], "next_stages": ["FRONT_LABEL_DRAFT"], "human_gate": false, "terminal": false},
+    "FRONT_LABEL_DRAFT": {"handler": "7dejv-label-front-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR"], "required_fields": ["product_id"], "next_stages": ["BACK_LABEL_DRAFT"], "human_gate": false, "terminal": false},
+    "BACK_LABEL_DRAFT": {"handler": "7dejv-label-a6-mono-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "ERROR", "WAITING_APPROVAL"], "required_fields": ["product_id", "risks"], "next_stages": ["RELEASE_AUDIT"], "human_gate": true, "terminal": false},
+    "RELEASE_AUDIT": {"handler": "7dejv-product-release-audit-skill", "allowed_statuses": ["PASS", "HOLD", "BLOCKED", "WAITING_APPROVAL"], "required_fields": ["product_id", "evidence", "risks", "approval"], "next_stages": ["READY_FOR_PILOT"], "human_gate": true, "terminal": false},
+    "READY_FOR_PILOT": {"handler": "HUMAN_REVIEW", "allowed_statuses": ["PASS", "HOLD", "BLOCKED"], "required_fields": ["product_id", "approval"], "next_stages": [], "human_gate": true, "terminal": true}
+  }
+}

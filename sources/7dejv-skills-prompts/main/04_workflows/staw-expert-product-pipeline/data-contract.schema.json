@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://7dejv.local/schemas/staw-expert-product-pipeline/1.0.0",
+  "title": "STAW EXPERT Product Pipeline Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "product_id", "stage", "status", "input_version", "source_urls", "evidence", "assumptions", "missing_data", "risks", "human_review_required", "retry_count", "created_at", "updated_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "product_id": {"type": "string", "pattern": "^SE-RND-[0-9]{4,}$"},
+    "stage": {"enum": ["DISCOVERED", "SHORTLISTED", "ANALYZED", "COMPOSITION_EVIDENCE", "FORMULATION_DRAFT", "DOSAGE_TEST_PLAN", "HUMAN_LAB_REVIEW", "NAMING_DRAFT", "COPY_DRAFT", "FRONT_LABEL_DRAFT", "BACK_LABEL_DRAFT", "RELEASE_AUDIT", "READY_FOR_PILOT"]},
+    "status": {"enum": ["PASS", "HOLD", "BLOCKED", "ERROR", "WAITING_APPROVAL"]},
+    "input_version": {"type": "string", "minLength": 1},
+    "source_urls": {"type": "array", "uniqueItems": true, "items": {"type": "string", "format": "uri"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "assumptions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "missing_data": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "risks": {"type": "array", "items": {"$ref": "#/$defs/risk"}},
+    "agent_output": {"type": ["object", "null"]},
+    "human_review_required": {"type": "boolean"},
+    "approval": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/approval"}]},
+    "retry_count": {"type": "integer", "minimum": 0},
+    "next_stage": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/stage"}]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "WAITING_APPROVAL"}}, "required": ["status"]},
+      "then": {"properties": {"human_review_required": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"stage": {"enum": ["HUMAN_LAB_REVIEW", "RELEASE_AUDIT", "READY_FOR_PILOT"]}}, "required": ["stage"]},
+      "then": {"properties": {"human_review_required": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"stage": {"const": "READY_FOR_PILOT"}, "status": {"const": "PASS"}}, "required": ["stage", "status"]},
+      "then": {"required": ["approval"], "properties": {"approval": {"$ref": "#/$defs/approvedApproval"}, "next_stage": {"type": "null"}}}
+    }
+  ],
+  "$defs": {
+    "stage": {"enum": ["DISCOVERED", "SHORTLISTED", "ANALYZED", "COMPOSITION_EVIDENCE", "FORMULATION_DRAFT", "DOSAGE_TEST_PLAN", "HUMAN_LAB_REVIEW", "NAMING_DRAFT", "COPY_DRAFT", "FRONT_LABEL_DRAFT", "BACK_LABEL_DRAFT", "RELEASE_AUDIT", "READY_FOR_PILOT"]},
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "source_url", "evidence_class", "confidence"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "claim": {"type": "string", "minLength": 1},
+        "source_url": {"type": "string", "format": "uri"},
+        "evidence_class": {"enum": ["A", "B", "C", "D", "E"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "notes": {"type": "string"}
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "severity", "description", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "category": {"enum": ["SAFETY", "LEGAL", "QUALITY", "COMMERCIAL", "DATA", "SECURITY", "OPERATIONS"]},
+        "severity": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+        "description": {"type": "string", "minLength": 1},
+        "status": {"enum": ["OPEN", "MITIGATED", "ACCEPTED", "CLOSED"]},
+        "owner": {"type": "string"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reviewer", "reviewed_at", "notes"],
+      "properties": {
+        "decision": {"enum": ["APPROVED", "REJECTED", "CHANGES_REQUIRED"]},
+        "reviewer": {"type": "string", "minLength": 1},
+        "reviewed_at": {"type": "string", "format": "date-time"},
+        "notes": {"type": "string"}
+      }
+    },
+    "approvedApproval": {
+      "allOf": [
+        {"$ref": "#/$defs/approval"},
+        {"properties": {"decision": {"const": "APPROVED"}}}
+      ]
+    }
+  }
+}
