@@ -14,3 +14,4 @@ To repo sluzy do utrzymywania agentow, skills i workflow jako jednej bazy centra
 
 - `skills-inventory-agent` - wykrywa artefakty i zbiera dowody
 - `skills-organizer-agent` - porzadkuje, normalizuje i wyznacza wersje kanoniczne
+- `user-perspective-ui-auditor` - niezaleznie ocenia UX/UI z perspektywy realnego uzytkownika; nie implementuje poprawek i nie zatwierdza wlasnej pracy
