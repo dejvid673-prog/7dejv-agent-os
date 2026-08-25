@@ -5,6 +5,8 @@
     {"name":"7dejv-repository-quality-auditor","path":"agents/7dejv-repository-quality-auditor.md","status":"canonical","purpose":"Audit repository quality and readiness evidence."},
     {"name":"7dejv-agent-security-auditor","path":"agents/7dejv-agent-security-auditor.md","status":"canonical","purpose":"Audit security of agents, skills, workflows, dependencies and integrations."},
     {"name":"7dejv-documentation-consistency-agent","path":"agents/7dejv-documentation-consistency-agent.md","status":"canonical","purpose":"Compare repository documentation claims with current files, registries and execution evidence."},
-    {"name":"prestashop-product-agent","path":"agents/prestashop-product-agent.md","status":"canonical","purpose":"Inspect, audit and safely improve PrestaShop products through bounded deterministic tools."}
+    {"name":"prestashop-product-agent","path":"agents/prestashop-product-agent.md","status":"canonical","purpose":"Inspect, audit and safely improve PrestaShop products through bounded deterministic tools."},
+    {"name":"project-completion-owner","path":"agents/project-completion-owner.md","status":"canonical","purpose":"Own multi-stage project completeness, persistent state, acceptance criteria and completion gates."},
+    {"name":"visual-regression-auditor","path":"agents/visual-regression-auditor.md","status":"canonical","purpose":"Detect unintended UI and interaction regressions and verify accepted visual states."}
   ]
 }
