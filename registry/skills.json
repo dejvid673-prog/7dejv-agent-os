@@ -30,6 +30,8 @@
     {"name":"7dejv-stage-registry-builder","path":"skills/7dejv-stage-registry-builder/SKILL.md","status":"canonical"},
     {"name":"airtable-cli","path":"skills/airtable-cli/SKILL.md","status":"canonical"},
     {"name":"airtable-filters","path":"skills/airtable-filters/SKILL.md","status":"canonical"},
-    {"name":"airtable-overview","path":"skills/airtable-overview/SKILL.md","status":"canonical"}
+    {"name":"airtable-overview","path":"skills/airtable-overview/SKILL.md","status":"canonical"},
+    {"name":"repository-inventory-skill","path":"skills/repository-inventory-skill/SKILL.md","status":"canonical"},
+    {"name":"skills-normalization-skill","path":"skills/skills-normalization-skill/SKILL.md","status":"canonical"}
   ]
 }
