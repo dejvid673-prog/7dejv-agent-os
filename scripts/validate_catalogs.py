@@ -65,7 +65,7 @@ def validate_registry(filename: str, collection_key: str, base_dir: str) -> None
             fail(f"{filename}: registered path does not exist: {rel_path}")
             continue
         text = full_path.read_text(encoding="utf-8")
-        if "Status: `canonical`" not in text and name not in {"skill-inventory-workflow", "skill-normalization-workflow"}:
+        if "Status: `canonical`" not in text:
             fail(f"{filename}: registered canonical artifact lacks explicit canonical status: {rel_path}")
 
     actual_files = {
