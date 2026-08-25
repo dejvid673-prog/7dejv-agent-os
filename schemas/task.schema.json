@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://7dejv.local/schemas/task.schema.json",
+  "title": "7DEJV Agent Task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "status", "owner", "repository", "branch", "goal", "scope", "acceptance_criteria", "evidence"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "title": {"type": "string", "minLength": 1},
+    "status": {"enum": ["BACKLOG", "CLAIMED", "IN_PROGRESS", "VERIFY", "PASSED", "DONE", "BLOCKED"]},
+    "owner": {"type": ["string", "null"]},
+    "repository": {"type": "string", "minLength": 1},
+    "branch": {"type": ["string", "null"]},
+    "goal": {"type": "string", "minLength": 1},
+    "scope": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "acceptance_criteria": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "blocked_reason": {"type": ["string", "null"]},
+    "handoff_to": {"type": ["string", "null"]}
+  }
+}
