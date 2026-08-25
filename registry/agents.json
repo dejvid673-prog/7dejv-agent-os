@@ -5,6 +5,7 @@
     {"name":"skills-organizer-agent","path":"agents/skills-organizer-agent.md","status":"canonical","purpose":"Normalize inventoried artifacts and produce migration/cleanup decisions."},
     {"name":"7dejv-repository-quality-auditor","path":"agents/7dejv-repository-quality-auditor.md","status":"canonical","purpose":"Audit repository quality and readiness evidence."},
     {"name":"7dejv-agent-security-auditor","path":"agents/7dejv-agent-security-auditor.md","status":"canonical","purpose":"Audit security of agents, skills, workflows, dependencies and integrations."},
-    {"name":"7dejv-documentation-consistency-agent","path":"agents/7dejv-documentation-consistency-agent.md","status":"canonical","purpose":"Compare repository documentation claims with current files, registries and execution evidence."}
+    {"name":"7dejv-documentation-consistency-agent","path":"agents/7dejv-documentation-consistency-agent.md","status":"canonical","purpose":"Compare repository documentation claims with current files, registries and execution evidence."},
+    {"name":"prestashop-product-agent","path":"agents/prestashop-product-agent.md","status":"canonical","purpose":"Inspect, audit and safely improve PrestaShop products through bounded deterministic tools."}
   ]
 }
