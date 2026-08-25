@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://7dejv.local/schemas/agents-registry.schema.json",
+  "title": "7DEJV Canonical Agents Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "agents"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "status", "purpose"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "path": {"type": "string", "pattern": "^agents/.+\\.md$"},
+          "status": {"const": "canonical"},
+          "purpose": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
