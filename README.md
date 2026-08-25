@@ -1,61 +1,62 @@
 # 7dejv-agent-os
 
-Centralne repozytorium 7DEJV dla:
+Central 7DEJV control-plane repository for shared agent infrastructure.
 
-- agents
-- skills
-- workflows
-- prompts
-- inventory
+It is the canonical source of truth for:
 
-To repo ma byc kanonicznym source of truth dla artefaktow agentowych. Stare repo pozostaja na etapie migracji jako zrodla referencyjne, dopoki nie zostanie zakonczone porownanie i cleanup.
+- agents;
+- skills;
+- workflows;
+- prompts;
+- machine-readable registries and schemas;
+- multi-agent coordination contracts;
+- audit/migration decisions and evidence.
 
-## Tryb pracy
+Product repositories remain the source of truth for their own product code and product-specific instructions.
 
-Priorytetem jest GitHub jako zrodlo prawdy:
+## Operating model
 
-1. Najpierw sprawdzaj repo online.
-2. Lokalne klony traktuj pomocniczo do porownan, backupu i szybszej pracy.
-3. Decyzje porzadkowe zapisuj tutaj, nawet jesli material zrodlowy pochodzi z innych repo.
+1. GitHub is authoritative; inspect online state before acting.
+2. Reuse existing canonical artifacts before creating new ones.
+3. `sources/**` is immutable reference evidence, never an active instruction surface.
+4. Shared artifacts are promoted only after provenance and contract review.
+5. Completion requires evidence; documentation alone does not establish runtime readiness.
+6. Non-trivial changes use a branch and pass the repository quality gate.
 
-## Struktura
+See `AGENTS.md` for instruction precedence, security, cleanup and multi-agent rules.
+See `SOURCE_OF_TRUTH.md` for canonical/reference boundaries.
 
-- `agents/` - definicje agentow w Markdown
-- `skills/` - natywne skille i procedury z `SKILL.md`
-- `workflows/` - przeplywy pracy i procedury migracyjne
-- `prompts/` - prompty robocze i szablony analizy
-- `docs/inventory/` - raporty inwentaryzacyjne
-- `docs/decisions/` - decyzje porzadkowe i migracyjne
-- `scripts/` - pomocnicze skrypty do audytu i migracji
-- `inventory/` - dane robocze, mapy i indeksy
+## Structure
 
-## Zasady
+- `agents/` — canonical agent definitions.
+- `skills/` — canonical native skills (`SKILL.md` + provenance where applicable).
+- `workflows/` — canonical work procedures.
+- `prompts/` — reusable canonical prompt assets.
+- `registry/` — machine-readable system inventory and routing state.
+- `schemas/` — contracts for registries/tasks and future machine-readable artifacts.
+- `tasks/` — multi-agent task ownership and handoff protocol.
+- `scripts/` — executable deterministic validation/audit helpers.
+- `.github/workflows/` — CI quality gates.
+- `inventory/` — human-readable inventory views.
+- `docs/inventory/` — audit/inventory evidence.
+- `docs/decisions/` — architecture, promotion and cleanup decisions.
+- `sources/` — immutable historical/migration archive; reference only.
 
-1. Nowe artefakty agentowe trafiaja tutaj, a nie do rozproszonych repo.
-2. Kazdy artefakt powinien miec status:
-   - `canonical`
-   - `reference`
-   - `duplicate`
-   - `unclear`
-3. Przed usunieciem duplikatow najpierw musi istniec:
-   - wersja kanoniczna,
-   - dowod zrodla,
-   - mapa migracji,
-   - osobna decyzja cleanup.
-4. Repo produktowe moga zawierac jedynie lokalne stuby, dokumentacje uzycia albo wskazanie do wersji kanonicznej.
+## Current validation
 
-## Start
+Run:
 
-Na poczatku aktywne sa dwa glowne byty robocze:
+```bash
+python scripts/validate_repository.py
+```
 
-- `agents/skills-inventory-agent.md`
-- `agents/skills-organizer-agent.md`
+The validator checks the repository registry, canonical skill identity/frontmatter, index consistency, required paths and a small set of high-confidence secret patterns. GitHub Actions compiles and runs it on pull requests and pushes to `main`.
 
-oraz dwa odpowiadajace im skille:
+## Current migration status
 
-- `skills/repository-inventory-skill/`
-- `skills/skills-normalization-skill/`
+- 30 canonical skills have been promoted with provenance records.
+- imported agent candidates remain `HOLD` until their role/input/output/failure/handoff contracts are complete;
+- historical/reference copies under `sources/**` are retained deliberately;
+- conflicting active artifacts are consolidated only after explicit comparison and a recorded decision.
 
-## Status
-
-Ten repozytorium jest przygotowane jako baza centralna. Migracja z dotychczasowych repo nie zostala jeszcze zakonczona.
+The next maturity step is implementation and validation of existing governance contracts, not uncontrolled growth in the number of agents or skills.
