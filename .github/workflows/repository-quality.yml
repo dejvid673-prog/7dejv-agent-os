@@ -23,8 +23,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Compile validator
-        run: python -m py_compile scripts/validate_repository.py
+      - name: Compile validators
+        run: python -m py_compile scripts/validate_repository.py scripts/validate_catalogs.py
 
       - name: Validate repository
         run: python scripts/validate_repository.py
+
+      - name: Validate canonical catalogs
+        run: python scripts/validate_catalogs.py
