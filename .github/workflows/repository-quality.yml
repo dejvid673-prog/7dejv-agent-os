@@ -24,13 +24,16 @@ jobs:
           python-version: '3.12'
 
       - name: Compile validators
-        run: python -m py_compile scripts/validate_repository.py scripts/validate_catalogs.py scripts/validate_skill_registry.py
+        run: python -m py_compile scripts/validate_repository.py scripts/validate_catalogs.py scripts/validate_skill_registry.py scripts/validate_schema_documents.py
 
       - name: Validate repository
         run: python scripts/validate_repository.py
 
-      - name: Validate canonical agent and workflow catalogs
+      - name: Validate canonical agent, workflow and prompt catalogs
         run: python scripts/validate_catalogs.py
 
       - name: Validate canonical skill registry
         run: python scripts/validate_skill_registry.py
+
+      - name: Validate schema documents
+        run: python scripts/validate_schema_documents.py
