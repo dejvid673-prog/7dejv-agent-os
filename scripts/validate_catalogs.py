@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate canonical agent/workflow registries against repository files."""
+"""Validate canonical agent, workflow and prompt registries against repository files."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def validate_registry(filename: str, collection_key: str, base_dir: str) -> None
             fail(f"{filename}: registered path does not exist: {rel_path}")
             continue
         text = full_path.read_text(encoding="utf-8")
-        if "Status: `canonical`" not in text and name not in {"skill-inventory-workflow", "skill-normalization-workflow"}:
+        if "Status: `canonical`" not in text:
             fail(f"{filename}: registered canonical artifact lacks explicit canonical status: {rel_path}")
 
     actual_files = {
@@ -81,6 +81,7 @@ def validate_registry(filename: str, collection_key: str, base_dir: str) -> None
 def main() -> int:
     validate_registry("agents.json", "agents", "agents")
     validate_registry("workflows.json", "workflows", "workflows")
+    validate_registry("prompts.json", "prompts", "prompts")
     for item in ERRORS:
         print(f"ERROR: {item}")
     print(json.dumps({"status": "PASS" if not ERRORS else "BLOCKED", "errors": len(ERRORS)}, sort_keys=True))

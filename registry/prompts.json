@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "prompts": [
+    {"name":"inventory-prompt","path":"prompts/inventory-prompt.md","status":"canonical","purpose":"Bounded evidence-backed artifact inventory."},
+    {"name":"normalization-prompt","path":"prompts/normalization-prompt.md","status":"canonical","purpose":"Provenance-aware canonicalization and duplicate cleanup planning."}
+  ]
+}

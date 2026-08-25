@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://7dejv.local/schemas/prompts-registry.schema.json",
+  "title": "7DEJV Canonical Prompts Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "prompts"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "prompts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "status", "purpose"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "path": {"type": "string", "pattern": "^prompts/.+\\.md$"},
+          "status": {"const": "canonical"},
+          "purpose": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
