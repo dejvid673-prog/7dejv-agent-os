@@ -6,6 +6,8 @@
     {"name":"7dejv-agent-security-auditor","path":"agents/7dejv-agent-security-auditor.md","status":"canonical","purpose":"Audit security of agents, skills, workflows, dependencies and integrations."},
     {"name":"7dejv-documentation-consistency-agent","path":"agents/7dejv-documentation-consistency-agent.md","status":"canonical","purpose":"Compare repository documentation claims with current files, registries and execution evidence."},
     {"name":"prestashop-product-agent","path":"agents/prestashop-product-agent.md","status":"canonical","purpose":"Inspect, audit and safely improve PrestaShop products through bounded deterministic tools."},
+    {"name":"prestashop-operations-agent","path":"agents/prestashop-operations-agent.md","status":"canonical","purpose":"Own store-wide PrestaShop 9 operational audits, connectivity, issue detection and controlled allowlisted maintenance."},
+    {"name":"erli-operations-agent","path":"agents/erli-operations-agent.md","status":"canonical","purpose":"Own ERLI seller API audits, synchronization checks, issue detection and controlled allowlisted marketplace maintenance."},
     {"name":"project-completion-owner","path":"agents/project-completion-owner.md","status":"canonical","purpose":"Own multi-stage project completeness, persistent state, acceptance criteria and completion gates."},
     {"name":"visual-regression-auditor","path":"agents/visual-regression-auditor.md","status":"canonical","purpose":"Detect unintended UI and interaction regressions and verify accepted visual states."}
   ]
