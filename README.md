@@ -28,11 +28,11 @@ See `SOURCE_OF_TRUTH.md` for canonical/reference boundaries.
 
 ## Structure
 
-- `agents/` — canonical agent definitions.
+- `agents/` — canonical contracted agent definitions.
 - `skills/` — canonical native skills (`SKILL.md` + provenance where applicable).
-- `workflows/` — canonical work procedures.
+- `workflows/` — canonical global work procedures and gates.
 - `prompts/` — reusable canonical prompt assets.
-- `registry/` — machine-readable system inventory and routing state.
+- `registry/` — machine-readable repositories, agents, skills and workflows.
 - `schemas/` — contracts for registries/tasks and future machine-readable artifacts.
 - `tasks/` — multi-agent task ownership and handoff protocol.
 - `scripts/` — executable deterministic validation/audit helpers.
@@ -42,21 +42,36 @@ See `SOURCE_OF_TRUTH.md` for canonical/reference boundaries.
 - `docs/decisions/` — architecture, promotion and cleanup decisions.
 - `sources/` — immutable historical/migration archive; reference only.
 
+## Canonical catalogs
+
+Machine-readable routing starts from:
+
+- `registry/repositories.json` — 16 repositories in the 2026-08-25 snapshot;
+- `registry/agents.json` — active contracted agents;
+- `registry/skills.json` — 30 canonical skills;
+- `registry/workflows.json` — active global workflows/gates.
+
+An artifact under a canonical directory is not allowed to silently bypass its registry where CI enforcement exists.
+
 ## Current validation
 
 Run:
 
 ```bash
 python scripts/validate_repository.py
+python scripts/validate_catalogs.py
+python scripts/validate_skill_registry.py
 ```
 
-The validator checks the repository registry, canonical skill identity/frontmatter, index consistency, required paths and a small set of high-confidence secret patterns. GitHub Actions compiles and runs it on pull requests and pushes to `main`.
+GitHub Actions compiles and executes all validators on pull requests and pushes to `main`. The checks cover repository inventory consistency, canonical skill identity/frontmatter, agent/workflow registry uniqueness and path coverage, required paths, and a small set of high-confidence secret patterns.
 
 ## Current migration status
 
-- 30 canonical skills have been promoted with provenance records.
-- imported agent candidates remain `HOLD` until their role/input/output/failure/handoff contracts are complete;
-- historical/reference copies under `sources/**` are retained deliberately;
-- conflicting active artifacts are consolidated only after explicit comparison and a recorded decision.
+- 30 canonical skills are registered and retain provenance records from their migration sources.
+- 5 canonical agents are active: inventory, organizer, repository-quality auditor, security auditor and documentation-consistency auditor.
+- 5 canonical global workflows are active: inventory, normalization, repository quality gate, agent-definition review and security release gate.
+- remaining imported agent/workflow candidates stay `HOLD` until their contracts, global/local scope and overlap are resolved.
+- historical/reference copies under `sources/**` are retained deliberately.
+- the two historical `codex-workflow-router` variants remain reference-only: the feature variant adds a local STAW/Repetytorium mode to the global router, and neither variant may be promoted until all referenced capabilities can be resolved against canonical registries.
 
-The next maturity step is implementation and validation of existing governance contracts, not uncontrolled growth in the number of agents or skills.
+The current priority is executable governance, registry completeness, conflict consolidation and evidence-backed promotion—not increasing artifact count for its own sake.
