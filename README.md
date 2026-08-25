@@ -48,7 +48,7 @@ Machine-readable routing starts from:
 
 - `registry/repositories.json` — 16 repositories in the 2026-08-25 snapshot;
 - `registry/agents.json` — active contracted agents;
-- `registry/skills.json` — 30 canonical skills;
+- `registry/skills.json` — 32 canonical skills;
 - `registry/workflows.json` — active global workflows/gates.
 
 An artifact under a canonical directory is not allowed to silently bypass its registry where CI enforcement exists.
@@ -67,7 +67,7 @@ GitHub Actions compiles and executes all validators on pull requests and pushes 
 
 ## Current migration status
 
-- 30 canonical skills are registered and retain provenance records from their migration sources.
+- 32 canonical skills are registered: 30 promoted with migration provenance plus 2 pre-existing bootstrap skills (`repository-inventory-skill` and `skills-normalization-skill`).
 - 5 canonical agents are active: inventory, organizer, repository-quality auditor, security auditor and documentation-consistency auditor.
 - 5 canonical global workflows are active: inventory, normalization, repository quality gate, agent-definition review and security release gate.
 - remaining imported agent/workflow candidates stay `HOLD` until their contracts, global/local scope and overlap are resolved.
