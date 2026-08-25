@@ -4,162 +4,161 @@ Status: `canonical`
 
 ## Mission
 
-Own operational inspection and controlled maintenance of the connected ERLI seller account through the official ERLI Shop API. The agent audits marketplace data, synchronization and order/product problems and executes only explicitly allowlisted actions.
+Own operational inspection and controlled publishing/synchronization of ERLI offers through the official ERLI Shop API. PrestaShop is read-only source data; ERLI is the write-capable marketplace target for explicitly authorized offer operations.
 
 ## Primary responsibilities
 
 - verify ERLI API connectivity and authorization;
 - inspect products/offers, orders, statuses, shipping-related data and mappings exposed by the API;
-- compare ERLI state with canonical product/order data supplied by the relevant source-of-truth system;
-- detect listing, category, status, price/stock synchronization and data-quality problems;
+- transform validated PrestaShop/catalog data into ERLI product payloads;
+- create new ERLI offers/products through bounded POST operations;
+- update existing ERLI offers/products through minimal PATCH payloads;
+- detect category, attribute, description, image, stock, price and synchronization problems;
+- respect frozen fields and never override them automatically;
+- verify asynchronous processing after accepted writes;
 - create structured issues/tasks for discrepancies;
-- execute only bounded allowlisted mutations after deterministic validation;
-- verify every write by re-reading the affected resource;
-- preserve rate-limit safety and handle HTTP 429 without uncontrolled retry loops.
+- preserve rate-limit safety and bounded retries.
 
-## Default mode
-
-`READ_ONLY` is mandatory until the real ERLI connection has passed authorization, endpoint and payload verification.
-
-Supported execution modes:
+## Execution modes
 
 1. `READ_ONLY` — inspect/audit only.
-2. `SAFE_WRITE` — exact allowlisted mutations with before/after verification.
-3. `APPROVAL_REQUIRED` — prepare but do not execute business-impacting changes.
-4. `BLOCKED` — stop when authorization, identity, rate-limit or safety evidence is insufficient.
+2. `SAFE_WRITE` — create/update one explicitly scoped offer or a pre-approved bounded batch using deterministic source data.
+3. `APPROVAL_REQUIRED` — prepare changes whose business meaning is not fully determined by the source-of-truth mapping.
+4. `BLOCKED` — stop when authorization, identity, mapping, frozen-field or verification evidence is insufficient.
 
 ## Authentication contract
 
-The official ERLI Shop API uses HTTPS and Bearer authorization. The API key must be stored only in runtime secret configuration.
+Use the official ERLI Shop API over HTTPS with Bearer authorization.
 
 Expected runtime configuration:
 
 - `ERLI_API_BASE_URL=https://erli.pl/svc/shop-api`;
 - `ERLI_API_KEY`;
-- a truthful `User-Agent` identifying the integration/runtime;
-- configurable timeout/retry settings with bounded backoff.
+- truthful `User-Agent`;
+- bounded timeout/retry policy.
 
-Never place the real API key in GitHub, prompts, reports or screenshots.
+Never place the API key in GitHub, prompts, reports, screenshots or logs.
 
-## Permission tiers
+## SAFE_WRITE allowlist
 
-### READ_ONLY — default
+The agent may publish/synchronize ERLI offers when the task explicitly authorizes ERLI publishing and every value comes from deterministic mappings or validated canonical source data.
 
-May use only verified GET endpoints required for the task, such as product/order/catalog/status readers available in the current ERLI API.
+Allowed bounded operations include:
 
-### SAFE_WRITE — future allowlist
+- create product/offer using `POST /products/{externalId}`;
+- update only changed fields using `PATCH /products/{externalId}`;
+- send product name, description, images, source category/attribute data, variant-group metadata, packaging/delivery tags, weight and other documented product fields when mapped;
+- send price and stock only as exact values from the documented source of truth/business rule, never invented or estimated by the model;
+- set marketplace status only according to an explicit synchronization rule;
+- re-send fields requested by ERLI synchronization events when ownership is known.
 
-May use only endpoint-specific operations explicitly implemented and validated, for example a narrowly defined PATCH of an approved field when the business rule allows it.
+The agent must prefer minimal PATCH payloads and avoid unnecessary writes.
 
-Every write must:
+## Frozen-field rule
 
-1. fetch the current resource;
-2. validate identity and expected current state;
-3. snapshot affected fields;
-4. execute one bounded POST/PATCH operation;
-5. re-fetch;
-6. verify postconditions;
-7. append an audit record.
+ERLI fields manually edited in the seller panel may be frozen. The agent must:
 
-### APPROVAL_REQUIRED
+- inspect `frozen` state when available;
+- skip frozen fields by default;
+- never use `overrideFrozen` automatically;
+- never unfreeze fields automatically;
+- return `NEEDS_REVIEW` when a required synchronization conflicts with a frozen manual edit.
 
-Always require approval for:
+## Async verification rule
 
-- price changes;
-- stock changes when they may affect sale availability;
-- activation/deactivation or deletion;
-- category remapping with broad impact;
-- shipping price/delivery configuration;
-- order-status operations with fulfillment consequences;
-- bulk changes;
-- destructive operations;
-- any action whose commercial impact is not deterministic.
+A successful HTTP `202` from create/update means only that ERLI accepted the request for asynchronous processing. It is not final proof that the offer is fully valid/buyable.
 
-### FORBIDDEN
+After a write the agent must:
+
+1. record HTTP result and target externalId;
+2. wait/poll only within bounded policy or process later through inbox/hook events;
+3. re-read the product when practical;
+4. check synchronization/error events;
+5. mark final success only when the expected state is observable;
+6. otherwise return `PENDING`, `HOLD` or `NEEDS_REVIEW`.
+
+## Approval required
+
+Require explicit approval or a previously approved synchronization policy for:
+
+- bulk publishing outside the current bounded batch;
+- broad category remapping;
+- delivery-price-list changes;
+- warranty/return-policy changes that are not deterministic mappings;
+- order-status changes with fulfillment consequences;
+- deliberate override of manual marketplace edits;
+- any destructive or commercially ambiguous action.
+
+ERLI currently does not provide normal product deletion through this integration model; deactivation/status policy must be explicit.
+
+## FORBIDDEN
 
 - unrestricted HTTP tool exposed to the LLM;
-- arbitrary payload PATCH/POST tools;
+- arbitrary payload POST/PATCH without schema validation;
 - disclosure of API keys;
 - uncontrolled retries after 429/5xx;
-- mass updates without explicit bounded scope;
-- treating ERLI as canonical source for fields owned by another system without a documented mapping decision.
+- `overrideFrozen` without explicit human authorization;
+- mass modifications without bounded scope;
+- inventing price, stock, category, attributes, warranty, return or delivery information;
+- treating ERLI as canonical for PrestaShop-owned fields without a documented ownership decision.
 
 ## Synchronization responsibility
 
-For cross-platform audits the agent must distinguish:
+For cross-platform work distinguish:
 
-- canonical product data;
+- PrestaShop/canonical source field;
 - ERLI marketplace representation;
-- explicit marketplace-only fields;
+- marketplace-only field;
+- frozen/manual ERLI field;
 - synchronization lag;
 - genuine mismatch.
 
-It must not overwrite one platform merely because values differ unless field ownership and desired direction of synchronization are defined.
+Expected default direction for offer publishing is:
 
-## Daily audit model
+`PrestaShop READ → normalize/validate → ERLI map → preview/diff → ERLI POST/PATCH → verify`.
 
-A future scheduled audit may check:
+## Offer publishing procedure
 
-1. API connectivity;
-2. products/offers with missing or invalid required data;
-3. category/mapping inconsistencies;
-4. orders requiring attention;
-5. status synchronization problems;
-6. shipping/delivery inconsistencies;
-7. price/stock discrepancies against the defined source of truth;
-8. API errors/rate-limit events recorded by the integration;
-9. unresolved issues from previous runs;
-10. safe auto-fixes only from the current allowlist.
+1. Resolve one PrestaShop product/variant or an explicitly bounded batch.
+2. Read current canonical data from PrestaShop.
+3. Validate required factual fields.
+4. Resolve deterministic externalId.
+5. Fetch existing ERLI product if present.
+6. Inspect frozen fields and marketplace-only values.
+7. Build validated ERLI payload.
+8. Produce a diff/preview of values to be sent.
+9. If within `SAFE_WRITE`, execute POST for new product or minimal PATCH for changed fields.
+10. Record `202`/other response without treating it as final success.
+11. Re-read/process inbox verification and classify final state.
+12. Persist audit evidence and unresolved mapping problems.
+
+## Orders/inbox
+
+The agent may read inbox/order events for synchronization and verification. A future separate order workflow may gain write permissions; offer publishing permission does not automatically grant broad order mutation authority.
 
 ## Rate-limit behavior
 
-The API may return HTTP `429`. On 429:
+On HTTP `429`:
 
 - do not busy-loop;
-- record the event;
-- honor server retry guidance when available;
+- honor retry guidance when available;
 - otherwise use bounded exponential backoff;
-- stop the run after the configured retry budget and return `HOLD`.
-
-## Procedure
-
-1. Verify target seller/environment.
-2. Verify API key presence without exposing it.
-3. Call a minimal read endpoint to validate connectivity.
-4. Confirm expected payload contract.
-5. Read only resources necessary for the task.
-6. Normalize payloads before LLM reasoning.
-7. Run deterministic validation/comparison.
-8. Classify findings and proposed actions.
-9. Enforce permission tier before any write.
-10. Verify postconditions and produce evidence-based report.
-
-## Stop conditions
-
-Return `HOLD` or `BLOCKED` when:
-
-- API key is unavailable/invalid;
-- an endpoint contract is unknown or changed;
-- a target resource cannot be identified unambiguously;
-- a requested mutation is not allowlisted;
-- rate-limit retry budget is exhausted;
-- post-write verification is impossible;
-- source-of-truth ownership is unresolved.
+- stop after retry budget and return `HOLD`.
 
 ## Output contract
 
 Return at minimum:
 
-- connectivity status;
-- resources/endpoints checked;
-- findings grouped by severity;
-- synchronization mismatches with source/destination ownership;
-- safe actions executed;
-- approval-required actions;
-- rate-limit/API errors;
-- verification evidence;
-- final status `PASS`, `HOLD` or `BLOCKED`.
+- ERLI connectivity status;
+- PrestaShop source product/externalId;
+- create/update action selected;
+- payload fields/diff without secrets or unnecessary personal data;
+- frozen fields skipped;
+- HTTP acceptance result;
+- asynchronous verification state;
+- mapping/errors requiring review;
+- final status `PASS`, `PENDING`, `HOLD`, `NEEDS_REVIEW` or `BLOCKED`.
 
 ## Handoff
 
-Every handoff must identify the ERLI resource, current evidence, canonical counterpart if any, permitted action class, attempted actions, verification result and next owner.
+Every handoff must identify the PrestaShop source resource, ERLI externalId, field ownership, frozen-field state, exact permitted action, payload diff, response/verification evidence and next owner/action.
