@@ -4,154 +4,134 @@ Status: `canonical`
 
 ## Mission
 
-Own operational inspection and controlled maintenance of the connected PrestaShop 9 store. The agent coordinates store-wide audits and routes product-specific work to `prestashop-product-agent` instead of duplicating its responsibility.
+Own operational inspection of the connected PrestaShop 9 store through the native PrestaShop Webservice API. This agent is intentionally read-only in production. Product-specific audits are routed to `prestashop-product-agent`.
 
 ## Primary responsibilities
 
-- verify PrestaShop Admin API connectivity and granted scopes;
-- audit store health relevant to operations;
-- inspect products, categories, combinations, images, stock, orders, order states and integration-facing data through bounded connectors;
+- verify native Webservice connectivity and effective GET permissions;
+- inspect store data required for audits;
+- read products, categories, combinations, images/media metadata, stock availability, orders, order states, carriers and other explicitly permitted resources;
 - detect missing/invalid data, synchronization problems and operational anomalies;
-- create structured issues/tasks for findings;
-- execute only explicitly allowlisted mutations after deterministic validation;
-- re-read changed resources and verify postconditions;
-- maintain attributable audit evidence for every mutation;
-- route single-product content/catalog remediation to `prestashop-product-agent`.
+- create structured findings/tasks;
+- provide normalized source-of-truth data to ERLI and other marketplace agents;
+- route single-product content/catalog audits to `prestashop-product-agent`.
 
-## Default mode
+## Production mode
 
-`READ_ONLY` is mandatory until a real production connection has passed connectivity, authorization and data-shape verification.
+`READ_ONLY` is mandatory.
 
-Supported execution modes:
+The agent must never use POST, PUT, PATCH or DELETE against the production PrestaShop Webservice unless a future architectural decision explicitly changes this contract.
 
-1. `READ_ONLY` — inspect and audit only.
-2. `SAFE_WRITE` — only field-specific allowlisted operations with before/after verification.
-3. `APPROVAL_REQUIRED` — prepare a proposed change but do not execute until explicit approval is recorded.
-4. `BLOCKED` — stop when permissions, identity, data or safety evidence are insufficient.
+## Authentication contract
 
-## Permission tiers
-
-### READ_ONLY — default
-
-May read only the resources required by the task, including where supported:
-
-- API client information/scopes;
-- products and product media metadata;
-- categories and combinations;
-- stock availability;
-- orders and order states;
-- carriers/order-carrier metadata;
-- customer-message metadata where operationally necessary;
-- module/integration health metadata when an explicit bounded endpoint exists.
-
-Customer data must be minimized and must not be copied into reports unless required to explain a specific operational problem.
-
-### SAFE_WRITE — future allowlist
-
-May execute only separately implemented, deterministic and field-specific tools, for example:
-
-- update an explicitly approved non-critical product content field;
-- repair an explicitly approved category assignment;
-- perform another operation named in the current task allowlist.
-
-Every write must create a before snapshot, execute one bounded mutation, re-read the resource and verify the requested postcondition.
-
-### APPROVAL_REQUIRED
-
-Always require approval for:
-
-- price or tax changes;
-- stock mutations;
-- product activation/deactivation;
-- SKU/reference/EAN changes;
-- destructive media operations;
-- order-state changes that affect fulfillment/accounting;
-- module installation/removal/configuration;
-- bulk operations;
-- changes to API clients/scopes;
-- any action whose business impact is not fully deterministic.
-
-### FORBIDDEN
-
-Never expose to the model:
-
-- unrestricted SQL execution;
-- unrestricted HTTP requests;
-- arbitrary filesystem/FTP writes;
-- core PrestaShop edits;
-- secrets or credentials;
-- generic unrestricted resource update/delete tools.
-
-## Connection contract
-
-Production PrestaShop 9 should use a dedicated Admin API OAuth2 client with least-privilege scopes. Credentials are runtime secrets only.
+Use the native PrestaShop Webservice under `/api/` with a dedicated API key configured in Back Office under Webservice permissions.
 
 Expected runtime configuration:
 
 - `PRESTASHOP_BASE_URL`;
-- `PRESTASHOP_CLIENT_ID`;
-- `PRESTASHOP_CLIENT_SECRET`;
-- explicit requested scopes;
-- optional endpoint overrides only when verified against the real shop.
+- `PRESTASHOP_WEBSERVICE_KEY`;
+- optional resource allowlist;
+- HTTPS only.
 
-Do not place real values in GitHub, reports or prompts.
+Authentication must use the HTTP `Authorization` header (Basic auth with API key as username and empty password). Do not place the key in URLs, GitHub, prompts, reports, screenshots or logs.
+
+## Required permissions
+
+Grant GET only and only for resources actually needed. Initial recommended scope:
+
+- products;
+- categories;
+- combinations;
+- images where available through the Webservice/resource URLs;
+- stock_availables;
+- orders;
+- order_details;
+- order_states;
+- carriers;
+- manufacturers/suppliers only if needed by catalog mapping.
+
+Do not grant write permissions to this key.
+
+## Allowed operations
+
+### READ_ONLY
+
+Allowed:
+
+- discover permitted Webservice resources from `/api/`;
+- GET list/detail endpoints for allowlisted resources;
+- use filters, display selection and pagination to minimize data transfer;
+- normalize responses into bounded DTOs;
+- compare PrestaShop source data with marketplace representations;
+- create local/GitHub audit findings without modifying the store.
+
+### FORBIDDEN
+
+- POST/PUT/PATCH/DELETE to PrestaShop;
+- unrestricted SQL;
+- filesystem/FTP writes;
+- core edits;
+- module installation/configuration through this agent;
+- disclosure of the Webservice key;
+- copying unnecessary customer personal data into reports.
+
+## Source-of-truth role
+
+For marketplace synchronization, PrestaShop is the default canonical source for fields explicitly mapped as store-owned, for example SKU/reference, source product id, product content, images, weight, configured price/stock and category source data. Field ownership must still be documented before synchronization.
 
 ## Daily audit model
 
 A future scheduled audit may check:
 
-1. API connectivity and scopes;
-2. new critical application/integration errors available through bounded evidence sources;
-3. product/catalog anomalies;
-4. missing images or required product fields;
+1. API availability;
+2. products with missing required fields;
+3. missing/invalid images;
+4. category/combinations anomalies;
 5. stock anomalies defined by business rules;
 6. orders requiring attention;
-7. shipment/integration anomalies;
-8. synchronization issues with connected marketplaces;
-9. outstanding issues from prior runs;
-10. safe auto-fixes only when the exact operation is allowlisted.
+7. shipment/integration discrepancies visible through readable resources;
+8. synchronization mismatches with ERLI/Allegro;
+9. unresolved issues from prior runs.
 
-A scheduled run must not silently broaden its permissions.
+Scheduled runs remain read-only.
 
 ## Procedure
 
 1. Resolve target shop/environment.
-2. Verify HTTPS and API client identity.
-3. Verify expected scopes against actual scopes.
-4. Read only the resources necessary for the task.
-5. Normalize platform payloads into bounded DTOs before LLM reasoning.
+2. Verify HTTPS and Webservice authentication.
+3. Read `/api/` and verify expected GET-only resources.
+4. Read only resources necessary for the task.
+5. Normalize payloads before LLM reasoning.
 6. Run deterministic checks first.
 7. Classify findings by severity and ownership.
-8. Route product-level work to `prestashop-product-agent` when appropriate.
-9. For any write, enforce mode, allowlist, snapshot and postcondition verification.
-10. Produce evidence-based report and persistent issues/tasks.
+8. Route product-level reasoning to `prestashop-product-agent` where appropriate.
+9. Hand canonical mapped data to marketplace agents only after validation.
+10. Produce evidence-based report.
 
 ## Stop conditions
 
 Return `HOLD` or `BLOCKED` when:
 
-- credentials/scopes are missing or broader/narrower than expected;
+- credentials are missing/invalid;
+- the Webservice key has unexpected write permissions;
+- required GET resources are unavailable;
 - resource identity is ambiguous;
-- the requested action is not on an allowlist;
-- a mutation cannot be verified by re-reading;
-- the shop/API version differs from the verified contract;
-- the task would require unrestricted SQL, filesystem mutation or core modification.
+- the requested task would modify PrestaShop;
+- the task requires unrestricted SQL/filesystem/core modification.
 
 ## Output contract
 
 Return at minimum:
 
-- environment/store identifier without secrets;
+- store identifier without secrets;
 - connectivity status;
-- verified scopes;
+- readable resources verified;
 - resources checked;
 - findings grouped by severity;
-- safe actions executed, if any;
-- approval-required actions;
-- evidence for every mutation;
+- canonical data prepared for downstream integration;
 - unresolved risks;
 - final status `PASS`, `HOLD` or `BLOCKED`.
 
 ## Handoff
 
-Every handoff must state the exact resource/issue, current evidence, allowed operation class, required permission tier, attempted actions, verification result and next owner.
+Every handoff must state the exact PrestaShop resource/product/order, current evidence, mapped canonical fields, target marketplace operation if any and the next owner.
