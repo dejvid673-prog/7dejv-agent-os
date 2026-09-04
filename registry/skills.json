@@ -3,10 +3,12 @@
   "skills": [
     {"name":"7dejv-agent-contract-builder","path":"skills/7dejv-agent-contract-builder/SKILL.md","status":"canonical"},
     {"name":"7dejv-agent-overlap-detector","path":"skills/7dejv-agent-overlap-detector/SKILL.md","status":"canonical"},
+    {"name":"7dejv-codex-runtime-bootstrap","path":"skills/7dejv-codex-runtime-bootstrap/SKILL.md","status":"canonical"},
     {"name":"7dejv-composition-evidence-skill","path":"skills/7dejv-composition-evidence-skill/SKILL.md","status":"canonical"},
     {"name":"7dejv-dosage-test-planning-skill","path":"skills/7dejv-dosage-test-planning-skill/SKILL.md","status":"canonical"},
     {"name":"7dejv-eval-generator","path":"skills/7dejv-eval-generator/SKILL.md","status":"canonical"},
     {"name":"7dejv-eval-grader","path":"skills/7dejv-eval-grader/SKILL.md","status":"canonical"},
+    {"name":"7dejv-expert-router","path":"skills/7dejv-expert-router/SKILL.md","status":"canonical"},
     {"name":"7dejv-external-dependency-auditor","path":"skills/7dejv-external-dependency-auditor/SKILL.md","status":"canonical"},
     {"name":"7dejv-formulation-brief-skill","path":"skills/7dejv-formulation-brief-skill/SKILL.md","status":"canonical"},
     {"name":"7dejv-json-schema-hardener","path":"skills/7dejv-json-schema-hardener/SKILL.md","status":"canonical"},

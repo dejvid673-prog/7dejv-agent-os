@@ -24,7 +24,13 @@ jobs:
           python-version: '3.12'
 
       - name: Compile validators
-        run: python -m py_compile scripts/validate_repository.py scripts/validate_catalogs.py scripts/validate_skill_registry.py scripts/validate_schema_documents.py
+        run: python -m py_compile scripts/validate_repository.py scripts/validate_catalogs.py scripts/validate_skill_registry.py scripts/validate_schema_documents.py scripts/validate_codex_runtime_assets.py scripts/audit_codex_runtime.py
+
+      - name: Parse Codex runtime PowerShell installer
+        shell: pwsh
+        run: |
+          $source = Get-Content -LiteralPath ./scripts/install_codex_runtime.ps1 -Raw
+          [void][scriptblock]::Create($source)
 
       - name: Validate repository
         run: python scripts/validate_repository.py
@@ -37,3 +43,6 @@ jobs:
 
       - name: Validate schema documents
         run: python scripts/validate_schema_documents.py
+
+      - name: Validate Codex runtime assets
+        run: python scripts/validate_codex_runtime_assets.py

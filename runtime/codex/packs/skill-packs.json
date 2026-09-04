@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "packs": [
+    {
+      "name": "engineering",
+      "description": "General software engineering, repository work, contracts, validation and implementation review.",
+      "skills": [
+        "repository-inventory-skill",
+        "7dejv-repository-quality-audit-skill",
+        "7dejv-secret-scanner",
+        "7dejv-external-dependency-auditor",
+        "7dejv-json-schema-hardener",
+        "7dejv-readiness-status-calculator",
+        "7dejv-repo-index-generator",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader"
+      ],
+      "preferred_external_capabilities": ["GitHub", "OpenAI Developers"]
+    },
+    {
+      "name": "security-quality",
+      "description": "Security, prompt-injection resistance, dependency review, regression detection and evidence-backed release quality.",
+      "skills": [
+        "7dejv-secret-scanner",
+        "7dejv-external-dependency-auditor",
+        "7dejv-prompt-injection-defense",
+        "7dejv-repository-quality-audit-skill",
+        "7dejv-product-release-audit-skill",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader",
+        "7dejv-readiness-status-calculator"
+      ],
+      "preferred_external_capabilities": ["GitHub", "OpenAI Developers"]
+    },
+    {
+      "name": "data-analysis",
+      "description": "Structured-data cleanup, contracts, schema hardening, validation, scoring and analysis workflows.",
+      "skills": [
+        "7dejv-json-schema-hardener",
+        "7dejv-product-data-contract-validator",
+        "7dejv-readiness-status-calculator",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader",
+        "repository-inventory-skill"
+      ],
+      "preferred_external_capabilities": ["Supabase", "Spreadsheets", "OpenAI Developers"]
+    },
+    {
+      "name": "research-rnd",
+      "description": "Evidence-first research, product/R&D briefs, composition evidence and test-planning work.",
+      "skills": [
+        "7dejv-market-research-skill",
+        "7dejv-formulation-brief-skill",
+        "7dejv-dosage-test-planning-skill",
+        "7dejv-composition-evidence-skill",
+        "7dejv-prompt-injection-defense",
+        "7dejv-eval-grader"
+      ],
+      "preferred_external_capabilities": ["OpenAI Developers", "Google Drive"]
+    },
+    {
+      "name": "product-commerce",
+      "description": "Product-master, naming, copy, offer analysis, release QA and multichannel commerce preparation.",
+      "skills": [
+        "7dejv-product-pipeline-router",
+        "7dejv-product-naming-skill",
+        "7dejv-product-copy-skill",
+        "7dejv-product-data-contract-validator",
+        "7dejv-product-release-audit-skill",
+        "7dejv-offer-analysis-skill",
+        "7dejv-market-research-skill",
+        "7dejv-label-front-skill",
+        "7dejv-label-a6-mono-skill"
+      ],
+      "preferred_external_capabilities": ["Supabase", "Google Drive", "Creative Production"]
+    },
+    {
+      "name": "ui-product-design",
+      "description": "UI/product-design delivery with explicit user stories, visual review, evidence and implementation quality checks.",
+      "skills": [
+        "7dejv-repository-quality-audit-skill",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader",
+        "7dejv-readiness-status-calculator"
+      ],
+      "preferred_external_capabilities": ["Figma", "Product Design", "Creative Production", "GitHub"]
+    },
+    {
+      "name": "ops-integrations",
+      "description": "External-system/API integration work, operational safety, contracts, secrets and readiness verification.",
+      "skills": [
+        "repository-inventory-skill",
+        "7dejv-external-dependency-auditor",
+        "7dejv-secret-scanner",
+        "7dejv-json-schema-hardener",
+        "7dejv-prompt-injection-defense",
+        "7dejv-readiness-status-calculator",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader"
+      ],
+      "preferred_external_capabilities": ["GitHub", "Supabase", "OpenAI Developers"]
+    },
+    {
+      "name": "generalist",
+      "description": "Balanced broad project pack for mixed technical/product/research work; use project-scoped, not as the default global skill set.",
+      "skills": [
+        "repository-inventory-skill",
+        "7dejv-repository-quality-audit-skill",
+        "7dejv-secret-scanner",
+        "7dejv-external-dependency-auditor",
+        "7dejv-prompt-injection-defense",
+        "7dejv-json-schema-hardener",
+        "7dejv-readiness-status-calculator",
+        "7dejv-eval-generator",
+        "7dejv-eval-grader",
+        "7dejv-market-research-skill",
+        "7dejv-product-data-contract-validator",
+        "7dejv-offer-analysis-skill",
+        "7dejv-product-release-audit-skill"
+      ],
+      "preferred_external_capabilities": ["GitHub", "OpenAI Developers", "Supabase", "Figma", "Product Design", "Google Drive"]
+    }
+  ]
+}
