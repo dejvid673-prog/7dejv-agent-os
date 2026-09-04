@@ -28,6 +28,7 @@ BASELINE_SKILLS = (
     "7dejv-readiness-status-calculator",
     "7dejv-skill-linter",
     "7dejv-skill-factory",
+    "7dejv-expert-router",
 )
 
 EXPECTED_AGENTS = {
@@ -51,6 +52,8 @@ def parse_args() -> argparse.Namespace:
         default=Path(__file__).resolve().parents[1],
         help="Canonical 7dejv-agent-os checkout used for drift comparison.",
     )
+    parser.add_argument("--project-root", type=Path)
+    parser.add_argument("--pack", action="append", default=[], help="Expert pack to verify at project scope; repeat for multiple packs.")
     parser.add_argument("--skip-command-check", action="store_true")
     return parser.parse_args()
 
@@ -193,21 +196,60 @@ def main() -> int:
         add("BLOCKED", "skill-registry", f"Cannot read canonical skill registry: {type(exc).__name__}: {exc}")
         canonical = set()
 
-    for skill_name in BASELINE_SKILLS:
+    def check_skill(skill_name: str, installed_root: Path, scope: str) -> None:
         if skill_name not in canonical:
-            add("BLOCKED", f"skill:{skill_name}", "Baseline skill is not canonical in registry/skills.json.")
-            continue
+            add("BLOCKED", f"{scope}-skill:{skill_name}", "Skill is not canonical in registry/skills.json.")
+            return
         source = repo_root / "skills" / skill_name
-        installed = skills_home / skill_name
+        installed = installed_root / skill_name
         if not (installed / "SKILL.md").is_file():
-            add("HOLD", f"skill:{skill_name}", f"Not installed at {installed}")
-            continue
+            add("HOLD", f"{scope}-skill:{skill_name}", f"Not installed at {installed}")
+            return
         source_fp = tree_fingerprint(source)
         installed_fp = tree_fingerprint(installed)
         if source_fp and installed_fp and source_fp == installed_fp:
-            add("PASS", f"skill:{skill_name}", "Installed copy matches canonical checkout.")
+            add("PASS", f"{scope}-skill:{skill_name}", "Installed copy matches canonical checkout.")
         else:
-            add("HOLD", f"skill:{skill_name}", "Installed copy differs from the canonical checkout; review/sync required.")
+            add("HOLD", f"{scope}-skill:{skill_name}", "Installed copy differs from the canonical checkout; review/sync required.")
+
+    for skill_name in BASELINE_SKILLS:
+        check_skill(skill_name, skills_home, "global")
+
+    if args.pack:
+        if args.project_root is None:
+            add("BLOCKED", "expert-packs", "--pack requires --project-root because expert packs are project-scoped.")
+        elif not args.project_root.expanduser().is_dir():
+            add("BLOCKED", "expert-packs", f"Project root is missing or not a directory: {args.project_root}")
+        else:
+            project_root = args.project_root.expanduser().resolve()
+            project_skills_home = project_root / ".agents" / "skills"
+            pack_path = repo_root / "runtime" / "codex" / "packs" / "skill-packs.json"
+            try:
+                pack_manifest = json.loads(pack_path.read_text(encoding="utf-8"))
+                packs = {
+                    item.get("name"): item
+                    for item in pack_manifest.get("packs", [])
+                    if isinstance(item, dict) and isinstance(item.get("name"), str)
+                }
+            except (OSError, json.JSONDecodeError) as exc:
+                add("BLOCKED", "expert-packs", f"Cannot read expert-pack manifest: {type(exc).__name__}: {exc}")
+                packs = {}
+
+            expected_project_skills: set[str] = set()
+            for pack_name in dict.fromkeys(args.pack):
+                pack = packs.get(pack_name)
+                if not isinstance(pack, dict):
+                    add("BLOCKED", f"pack:{pack_name}", "Unknown expert pack.")
+                    continue
+                skills = pack.get("skills", [])
+                if not isinstance(skills, list):
+                    add("BLOCKED", f"pack:{pack_name}", "Pack skills field is invalid.")
+                    continue
+                expected_project_skills.update(item for item in skills if isinstance(item, str))
+                add("PASS", f"pack:{pack_name}", f"Pack definition loaded for {project_root}.")
+
+            for skill_name in sorted(expected_project_skills):
+                check_skill(skill_name, project_skills_home, "project")
 
     status = "BLOCKED" if blocked else "HOLD" if hold else "PASS"
     payload = {
@@ -215,6 +257,8 @@ def main() -> int:
         "codex_home": str(codex_home),
         "skills_home": str(skills_home),
         "repo_root": str(repo_root),
+        "project_root": str(args.project_root.expanduser()) if args.project_root else None,
+        "packs": args.pack,
         "checks": results,
     }
     print(json.dumps(payload, indent=2, ensure_ascii=False))
