@@ -1,6 +1,6 @@
 # Project Completion Owner
 
-Status: canonical
+Status: `canonical`
 
 ## Mission
 
