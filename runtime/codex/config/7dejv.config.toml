@@ -1,0 +1,26 @@
+# 7DEJV Codex profile
+# Install as $CODEX_HOME/7dejv.config.toml and select with: codex --profile 7dejv
+# Do not put secrets in this file.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "live"
+file_opener = "vscode"
+model_verbosity = "medium"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 6
+default_subagent_reasoning_effort = "medium"
+interrupt_message = true
+
+[features]
+skill_mcp_dependency_install = true
+shell_snapshot = true
+shell_tool = true
+
+[mcp_servers.openaiDeveloperDocs]
+enabled = true
+required = false
+url = "https://developers.openai.com/mcp"
+startup_timeout_sec = 15
