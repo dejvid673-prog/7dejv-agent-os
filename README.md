@@ -39,7 +39,7 @@ See `SOURCE_OF_TRUTH.md` for canonical/reference/runtime boundaries.
 - `schemas/` — formal contracts for registries/tasks and future machine-readable artifacts.
 - `tasks/` — multi-agent task ownership and handoff protocol.
 - `scripts/` — executable deterministic validation/audit helpers.
-- `runtime/codex/` — canonical installation/profile/subagent adapters for turning this repository into an actual local Codex runtime; see `runtime/codex/README.md`.
+- `runtime/codex/` — canonical installation/profile/subagent adapters plus expert-pack routing for turning this repository into an actual local Codex runtime; see `runtime/codex/README.md`.
 - `.github/workflows/` — CI quality gates.
 - `inventory/` — human-readable inventory views.
 - `docs/inventory/` — audit/inventory evidence.
@@ -60,7 +60,7 @@ An artifact under a canonical directory is not allowed to silently bypass its re
 
 ## Codex runtime bootstrap
 
-The repository now contains a safe user-runtime bootstrap path. Dry-run first:
+The repository contains a safe user-runtime bootstrap path. Dry-run first:
 
 ```powershell
 pwsh ./scripts/install_codex_runtime.ps1
@@ -74,7 +74,35 @@ python ./scripts/audit_codex_runtime.py
 codex --profile 7dejv
 ```
 
-The installer does not overwrite the primary `~/.codex/config.toml`; it installs a separate profile, a small baseline skill set and bounded custom subagents. Conflicting existing runtime files return `HOLD` unless replacement is explicitly requested with `-Force`, with backup first.
+The installer does not overwrite the primary `~/.codex/config.toml`; it installs a separate profile, a small global baseline skill set and bounded custom subagents. Conflicting existing runtime files return `HOLD` unless replacement is explicitly requested with `-Force`, with backup first.
+
+### Expert packs
+
+Broad capability is provided through **project-scoped expert packs**, not by globally installing every domain skill. Current families:
+
+- `engineering`;
+- `security-quality`;
+- `data-analysis`;
+- `research-rnd`;
+- `product-commerce`;
+- `ui-product-design`;
+- `ops-integrations`;
+- `generalist` as a project-scoped fallback.
+
+The canonical `7dejv-expert-router` selects the smallest useful pack/tool surface for mixed-domain work.
+
+Dry-run one project pack:
+
+```powershell
+pwsh ./scripts/install_codex_runtime.ps1 -ProjectRoot G:\path\to\repo -Pack engineering
+```
+
+Apply after review:
+
+```powershell
+pwsh ./scripts/install_codex_runtime.ps1 -Apply -ProjectRoot G:\path\to\repo -Pack engineering
+python ./scripts/audit_codex_runtime.py --project-root G:\path\to\repo --pack engineering
+```
 
 ## Current validation
 
@@ -88,7 +116,7 @@ python scripts/validate_schema_documents.py
 python scripts/validate_codex_runtime_assets.py
 ```
 
-GitHub Actions compiles and executes all validators on pull requests and pushes to `main`. The checks cover repository inventory consistency, canonical skill identity/frontmatter, agent/workflow/prompt registry uniqueness and path coverage, required paths, JSON Schema document integrity, Codex runtime-kit contracts, PowerShell installer syntax, and a small set of high-confidence secret patterns.
+GitHub Actions compiles and executes all validators on pull requests and pushes to `main`. The checks cover repository inventory consistency, canonical skill identity/frontmatter, agent/workflow/prompt registry uniqueness and path coverage, required paths, JSON Schema document integrity, Codex runtime/profile/subagent/expert-pack contracts, PowerShell installer syntax, and a small set of high-confidence secret patterns.
 
 ## Current migration status
 
