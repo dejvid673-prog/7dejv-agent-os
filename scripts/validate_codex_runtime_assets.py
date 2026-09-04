@@ -24,6 +24,18 @@ BASELINE_SKILLS = {
     "7dejv-readiness-status-calculator",
     "7dejv-skill-linter",
     "7dejv-skill-factory",
+    "7dejv-expert-router",
+}
+
+REQUIRED_PACKS = {
+    "engineering",
+    "security-quality",
+    "data-analysis",
+    "research-rnd",
+    "product-commerce",
+    "ui-product-design",
+    "ops-integrations",
+    "generalist",
 }
 
 EXPECTED_AGENTS = {
@@ -50,13 +62,31 @@ def read_toml(path: Path) -> dict:
     return value
 
 
+def canonical_skills() -> set[str]:
+    path = ROOT / "registry" / "skills.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        fail(f"cannot read skill registry: {exc}")
+        return set()
+    return {
+        item.get("name")
+        for item in data.get("skills", [])
+        if isinstance(item, dict)
+        and item.get("status") == "canonical"
+        and isinstance(item.get("name"), str)
+    }
+
+
 def validate_required_paths() -> None:
     required = [
         RUNTIME / "README.md",
         RUNTIME / "global" / "AGENTS.md",
         RUNTIME / "config" / "7dejv.config.toml",
+        RUNTIME / "packs" / "skill-packs.json",
         ROOT / "scripts" / "install_codex_runtime.ps1",
         ROOT / "scripts" / "audit_codex_runtime.py",
+        ROOT / "skills" / "7dejv-expert-router" / "SKILL.md",
     ]
     required.extend(RUNTIME / "agents" / name for name in EXPECTED_AGENTS)
     for path in required:
@@ -136,9 +166,13 @@ def validate_installer_contract() -> None:
         "[switch]$Apply",
         "[switch]$Force",
         "[switch]$AllCanonicalSkills",
+        "[string[]]$Pack",
+        "[string]$ProjectRoot",
         '"7dejv.config.toml"',
         '"AGENTS.md"',
         '"backups/7dejv-$Timestamp"',
+        '"packs/skill-packs.json"',
+        '".agents"',
     )
     for fragment in required_fragments:
         if fragment not in text:
@@ -147,32 +181,76 @@ def validate_installer_contract() -> None:
         fail("installer must not overwrite the user's primary config.toml")
     if "Remove-Item" in text and "-Force" not in text:
         fail("installer contains removal logic without explicit force-gating evidence")
+    if "-Pack requires -ProjectRoot" not in text:
+        fail("installer must keep expert packs project-scoped by requiring ProjectRoot")
 
 
-def validate_baseline_skills() -> None:
-    path = ROOT / "registry" / "skills.json"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError) as exc:
-        fail(f"cannot read skill registry: {exc}")
-        return
-    canonical = {
-        item.get("name")
-        for item in data.get("skills", [])
-        if isinstance(item, dict) and item.get("status") == "canonical"
-    }
+def validate_baseline_skills(canonical: set[str]) -> None:
     missing = sorted(BASELINE_SKILLS - canonical)
     if missing:
         fail(f"Codex baseline references non-canonical skills: {missing}")
 
 
+def validate_skill_packs(canonical: set[str]) -> None:
+    path = RUNTIME / "packs" / "skill-packs.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        fail(f"cannot read Codex skill-pack manifest: {exc}")
+        return
+
+    if not isinstance(data.get("schema_version"), int):
+        fail("Codex skill-pack manifest schema_version must be an integer")
+    packs = data.get("packs")
+    if not isinstance(packs, list) or not packs:
+        fail("Codex skill-pack manifest must contain a non-empty packs array")
+        return
+
+    seen: set[str] = set()
+    for index, pack in enumerate(packs):
+        if not isinstance(pack, dict):
+            fail(f"Codex pack[{index}] must be an object")
+            continue
+        name = pack.get("name")
+        if not isinstance(name, str) or not name:
+            fail(f"Codex pack[{index}] missing valid name")
+            continue
+        if name in seen:
+            fail(f"duplicate Codex pack name: {name}")
+        seen.add(name)
+        description = pack.get("description")
+        if not isinstance(description, str) or not description.strip():
+            fail(f"Codex pack {name} missing description")
+        skills = pack.get("skills")
+        if not isinstance(skills, list) or not skills:
+            fail(f"Codex pack {name} must contain skills")
+            continue
+        skill_names = [item for item in skills if isinstance(item, str) and item]
+        if len(skill_names) != len(skills):
+            fail(f"Codex pack {name} has invalid skill names")
+        if len(set(skill_names)) != len(skill_names):
+            fail(f"Codex pack {name} contains duplicate skills")
+        missing = sorted(set(skill_names) - canonical)
+        if missing:
+            fail(f"Codex pack {name} references non-canonical skills: {missing}")
+        capabilities = pack.get("preferred_external_capabilities", [])
+        if not isinstance(capabilities, list) or any(not isinstance(item, str) or not item for item in capabilities):
+            fail(f"Codex pack {name} has invalid preferred_external_capabilities")
+
+    missing_packs = sorted(REQUIRED_PACKS - seen)
+    if missing_packs:
+        fail(f"Codex skill-pack manifest missing required packs: {missing_packs}")
+
+
 def main() -> int:
+    canonical = canonical_skills()
     validate_required_paths()
     validate_profile()
     validate_agents()
     validate_global_guidance()
     validate_installer_contract()
-    validate_baseline_skills()
+    validate_baseline_skills(canonical)
+    validate_skill_packs(canonical)
 
     for item in ERRORS:
         print(f"ERROR: {item}")
