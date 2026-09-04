@@ -5,6 +5,8 @@
     {"name":"skill-normalization-workflow","path":"workflows/skill-normalization-workflow.md","status":"canonical","scope":"global"},
     {"name":"repository-quality-gate","path":"workflows/quality/repository-quality-gate.md","status":"canonical","scope":"global"},
     {"name":"agent-definition-review","path":"workflows/quality/agent-definition-review.md","status":"canonical","scope":"global"},
-    {"name":"security-release-gate","path":"workflows/security/security-release-gate.md","status":"canonical","scope":"global"}
+    {"name":"security-release-gate","path":"workflows/security/security-release-gate.md","status":"canonical","scope":"global"},
+    {"name":"commerce-platform-connection-bootstrap","path":"workflows/commerce-platform-connection-bootstrap.md","status":"canonical","scope":"global"},
+    {"name":"project-completion-workflow","path":"workflows/project-completion-workflow.md","status":"canonical","scope":"global"}
   ]
 }
