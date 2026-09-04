@@ -3,6 +3,8 @@ param(
     [switch]$Apply,
     [switch]$AllCanonicalSkills,
     [switch]$Force,
+    [string[]]$Pack = @(),
+    [string]$ProjectRoot = "",
     [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }),
     [string]$SkillsHome = $(Join-Path (Join-Path $HOME ".agents") "skills")
 )
@@ -13,6 +15,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $RuntimeRoot = Join-Path $RepoRoot "runtime/codex"
 $RegistryPath = Join-Path $RepoRoot "registry/skills.json"
+$PackManifestPath = Join-Path $RuntimeRoot "packs/skill-packs.json"
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $BackupRoot = Join-Path $CodexHome "backups/7dejv-$Timestamp"
 
@@ -26,12 +29,16 @@ $BaselineSkills = @(
     "7dejv-eval-grader",
     "7dejv-readiness-status-calculator",
     "7dejv-skill-linter",
-    "7dejv-skill-factory"
+    "7dejv-skill-factory",
+    "7dejv-expert-router"
 )
 
 $Results = New-Object System.Collections.Generic.List[object]
 $HadHold = $false
 $HadError = $false
+$ResolvedProjectRoot = $null
+$ProjectSkillsHome = $null
+$SelectedPacks = New-Object System.Collections.Generic.List[string]
 
 function Add-Result {
     param(
@@ -170,12 +177,32 @@ function Copy-DirectorySafe {
     }
 }
 
+function Install-SkillSet {
+    param(
+        [string[]]$SkillNames,
+        [string]$DestinationRoot,
+        [string]$ScopeLabel,
+        [string[]]$CanonicalNames
+    )
+    foreach ($SkillName in ($SkillNames | Sort-Object -Unique)) {
+        $destination = Join-Path $DestinationRoot $SkillName
+        if ($SkillName -notin $CanonicalNames) {
+            Add-Result -State "BLOCKED" -Artifact ("skill-" + $SkillName) -Destination $destination -Message "Skill is not canonical in registry/skills.json."
+            continue
+        }
+        Copy-DirectorySafe -Source (Join-Path (Join-Path $RepoRoot "skills") $SkillName) -Destination $destination -Label ("$ScopeLabel-skill-" + $SkillName)
+    }
+}
+
 try {
     if (-not (Test-Path -LiteralPath $RuntimeRoot -PathType Container)) {
         throw "Runtime directory missing: $RuntimeRoot"
     }
     if (-not (Test-Path -LiteralPath $RegistryPath -PathType Leaf)) {
         throw "Skill registry missing: $RegistryPath"
+    }
+    if (-not (Test-Path -LiteralPath $PackManifestPath -PathType Leaf)) {
+        throw "Skill-pack manifest missing: $PackManifestPath"
     }
 
     Copy-FileSafe -Source (Join-Path $RuntimeRoot "global/AGENTS.md") -Destination (Join-Path $CodexHome "AGENTS.md") -Label "global-AGENTS"
@@ -187,14 +214,36 @@ try {
 
     $Registry = Get-Content -LiteralPath $RegistryPath -Raw | ConvertFrom-Json
     $CanonicalNames = @($Registry.skills | Where-Object { $_.status -eq "canonical" } | ForEach-Object { $_.name })
-    $SkillNames = if ($AllCanonicalSkills) { $CanonicalNames } else { $BaselineSkills }
+    $GlobalSkillNames = if ($AllCanonicalSkills) { $CanonicalNames } else { $BaselineSkills }
+    Install-SkillSet -SkillNames $GlobalSkillNames -DestinationRoot $SkillsHome -ScopeLabel "global" -CanonicalNames $CanonicalNames
 
-    foreach ($SkillName in $SkillNames) {
-        if ($SkillName -notin $CanonicalNames) {
-            Add-Result -State "BLOCKED" -Artifact ("skill-" + $SkillName) -Destination (Join-Path $SkillsHome $SkillName) -Message "Skill is not canonical in registry/skills.json."
-            continue
+    if ($Pack.Count -gt 0) {
+        if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+            Add-Result -State "BLOCKED" -Artifact "expert-packs" -Destination "<project>/.agents/skills" -Message "-Pack requires -ProjectRoot so domain packs remain project-scoped."
+        } elseif (-not (Test-Path -LiteralPath $ProjectRoot -PathType Container)) {
+            Add-Result -State "BLOCKED" -Artifact "expert-packs" -Destination $ProjectRoot -Message "ProjectRoot does not exist or is not a directory."
+        } else {
+            $ResolvedProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
+            $ProjectSkillsHome = Join-Path (Join-Path $ResolvedProjectRoot ".agents") "skills"
+            $PackManifest = Get-Content -LiteralPath $PackManifestPath -Raw | ConvertFrom-Json
+            $ProjectSkillNames = New-Object System.Collections.Generic.List[string]
+
+            foreach ($PackName in ($Pack | Sort-Object -Unique)) {
+                $PackEntry = @($PackManifest.packs | Where-Object { $_.name -eq $PackName })
+                if ($PackEntry.Count -ne 1) {
+                    Add-Result -State "BLOCKED" -Artifact ("pack-" + $PackName) -Destination $ProjectSkillsHome -Message "Unknown or duplicate expert pack name."
+                    continue
+                }
+                $SelectedPacks.Add($PackName)
+                foreach ($SkillName in @($PackEntry[0].skills)) {
+                    $ProjectSkillNames.Add([string]$SkillName)
+                }
+            }
+
+            if ($ProjectSkillNames.Count -gt 0) {
+                Install-SkillSet -SkillNames @($ProjectSkillNames) -DestinationRoot $ProjectSkillsHome -ScopeLabel "project" -CanonicalNames $CanonicalNames
+            }
         }
-        Copy-DirectorySafe -Source (Join-Path (Join-Path $RepoRoot "skills") $SkillName) -Destination (Join-Path $SkillsHome $SkillName) -Label ("skill-" + $SkillName)
     }
 } catch {
     Add-Result -State "BLOCKED" -Artifact "installer" -Destination $CodexHome -Message $_.Exception.Message
@@ -215,8 +264,11 @@ $Status = if ($HadError) {
     applied = [bool]$Apply
     force = [bool]$Force
     all_canonical_skills = [bool]$AllCanonicalSkills
+    packs = @($SelectedPacks)
     codex_home = $CodexHome
-    skills_home = $SkillsHome
+    global_skills_home = $SkillsHome
+    project_root = $ResolvedProjectRoot
+    project_skills_home = $ProjectSkillsHome
     backup_root = if ($Apply -and $Force) { $BackupRoot } else { $null }
     results = $Results
 } | ConvertTo-Json -Depth 6
