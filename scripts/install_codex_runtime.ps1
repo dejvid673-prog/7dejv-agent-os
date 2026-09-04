@@ -52,10 +52,8 @@ function Add-Result {
 
 function Ensure-Directory {
     param([string]$Path)
-    if (-not (Test-Path -LiteralPath $Path)) {
-        if ($Apply) {
-            New-Item -ItemType Directory -Force -Path $Path | Out-Null
-        }
+    if (-not (Test-Path -LiteralPath $Path) -and $Apply) {
+        New-Item -ItemType Directory -Force -Path $Path | Out-Null
     }
 }
 
@@ -70,7 +68,7 @@ function Get-TreeFingerprint {
     if (-not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $root = (Resolve-Path -LiteralPath $Path).Path
     $parts = Get-ChildItem -LiteralPath $root -Recurse -File | ForEach-Object {
-        $relative = $_.FullName.Substring($root.Length).TrimStart([char]'\\', [char]'/').Replace('\\','/')
+        $relative = $_.FullName.Substring($root.Length).TrimStart([char]'\', [char]'/').Replace('\','/')
         "$relative`:$((Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash)"
     } | Sort-Object
     return ($parts -join "|")
@@ -180,21 +178,11 @@ try {
         throw "Skill registry missing: $RegistryPath"
     }
 
-    Copy-FileSafe \
-        -Source (Join-Path $RuntimeRoot "global/AGENTS.md") \
-        -Destination (Join-Path $CodexHome "AGENTS.md") \
-        -Label "global-AGENTS"
-
-    Copy-FileSafe \
-        -Source (Join-Path $RuntimeRoot "config/7dejv.config.toml") \
-        -Destination (Join-Path $CodexHome "7dejv.config.toml") \
-        -Label "7dejv-profile"
+    Copy-FileSafe -Source (Join-Path $RuntimeRoot "global/AGENTS.md") -Destination (Join-Path $CodexHome "AGENTS.md") -Label "global-AGENTS"
+    Copy-FileSafe -Source (Join-Path $RuntimeRoot "config/7dejv.config.toml") -Destination (Join-Path $CodexHome "7dejv.config.toml") -Label "7dejv-profile"
 
     Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot "agents") -Filter "*.toml" -File | Sort-Object Name | ForEach-Object {
-        Copy-FileSafe \
-            -Source $_.FullName \
-            -Destination (Join-Path (Join-Path $CodexHome "agents") $_.Name) \
-            -Label ("agent-" + $_.BaseName)
+        Copy-FileSafe -Source $_.FullName -Destination (Join-Path (Join-Path $CodexHome "agents") $_.Name) -Label ("agent-" + $_.BaseName)
     }
 
     $Registry = Get-Content -LiteralPath $RegistryPath -Raw | ConvertFrom-Json
@@ -206,10 +194,7 @@ try {
             Add-Result -State "BLOCKED" -Artifact ("skill-" + $SkillName) -Destination (Join-Path $SkillsHome $SkillName) -Message "Skill is not canonical in registry/skills.json."
             continue
         }
-        Copy-DirectorySafe \
-            -Source (Join-Path (Join-Path $RepoRoot "skills") $SkillName) \
-            -Destination (Join-Path $SkillsHome $SkillName) \
-            -Label ("skill-" + $SkillName)
+        Copy-DirectorySafe -Source (Join-Path (Join-Path $RepoRoot "skills") $SkillName) -Destination (Join-Path $SkillsHome $SkillName) -Label ("skill-" + $SkillName)
     }
 } catch {
     Add-Result -State "BLOCKED" -Artifact "installer" -Destination $CodexHome -Message $_.Exception.Message
