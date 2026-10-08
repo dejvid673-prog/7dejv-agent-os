@@ -1,6 +1,6 @@
 # Project Completion Workflow
 
-Status: canonical
+Status: `canonical`
 
 ## Goal
 
