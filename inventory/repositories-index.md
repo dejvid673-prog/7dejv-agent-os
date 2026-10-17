@@ -1,13 +1,13 @@
 # Repositories Index
 
-Snapshot: 2026-09-04
+Snapshot: 2026-10-08
 Owner: `dejvid673-prog`
 Source: current GitHub repository inventory.
 Machine-readable source: `registry/repositories.json`.
 
 ## Current repositories
 
-There are 19 repositories in scope at this snapshot.
+There are 21 repositories in scope at this snapshot. Registry status is not a claim of deployed runtime.
 
 ### canonical-control-plane
 
@@ -30,24 +30,20 @@ There are 19 repositories in scope at this snapshot.
 - `Explorer--najciekawsze`
 - `repetytorium`
 - `ideas`
+- `mcp`
 
 ### reference-low-signal
 
-- `Agent-repo`
-- `7dejv-dawid`
-- `bufor-github`
-- `WATAHA`
+- `Agent-repo` — status: `review`
+- `7dejv-dawid` — status: `review`
+- `bufor-github` — status: `review`
+- `WATAHA` — status: `review`
+- `7dejv_os` — status: `review`
 
 ### empty
 
-- `n8n`
-- `n8n_7d`
-
-## Classification notes added in this snapshot
-
-- `7dejv-mcp` is an active domain/project repository and its own source of truth for the 7DEJV MCP implementation.
-- `Explorer--najciekawsze` is an active domain repository used as the 7DEJV technology radar; its findings are candidates/evidence, not global governing instructions.
-- `WATAHA` currently contains insufficient repository evidence beyond a minimal README, so it remains `review` / `reference-low-signal` until its intended role is documented.
+- `n8n` — status: `empty`
+- `n8n_7d` — status: `empty`
 
 ## Routing rules
 
@@ -58,3 +54,10 @@ There are 19 repositories in scope at this snapshot.
 5. Empty repositories must not be assumed to provide capabilities.
 6. Classification is not a deletion decision. Repository retirement requires a separate audit and explicit approval.
 7. Canonical registration does not prove runtime installation/discovery; runtime activation must be separately verified.
+
+## 2026-10-08 synchronization notes
+
+- Compared registry names, visibility and default branches against the connected GitHub account: 21/21 repositories.
+- `n8n`, `n8n_7d`, and `7dejv_os` contain only placeholder documentation, not proven automation/runtime capabilities.
+- `7dejv-mcp` is an architectural source while `mcp` holds application code: similarity of names alone does not establish duplication.
+- Do not archive, delete, migrate, or activate repositories automatically based on this inventory.
