@@ -61,3 +61,9 @@ Excluded: deployed service tests, local workstation tests, production authentica
 - Canonical inventory: 21 distinct repository names, matched to linked-account visibility and branch metadata.
 - Markdown root README relative-path references: no missing targets detected in the checked repository trees; external URLs untested.
 - GitHub Actions evidence for previous catalog consistency issue: successful [Repository quality run](https://github.com/dejvid673-prog/7dejv-agent-os/actions/runs/37715221686) on original audit branch; stacked branch CI to be checked independently.
+
+## Follow-up — 2026-10-17
+
+- PR #6 was merged into `main` as `dd64102f8f582ed13ebbc6d07247f542c6396054`, preserving the parent commits of this stacked inventory branch.
+- This PR is now targeted to `main`; the original 16→19→21 historical migration sequence above is unchanged.
+- Merge requires a passing Repository quality check on the updated PR branch. The production/runtime state of unrelated services was not tested as part of this inventory audit.
