@@ -14,6 +14,8 @@ It is the canonical source of truth for:
 
 Product repositories remain the source of truth for their own product code and product-specific instructions.
 
+**Canonical storage is not the same as runtime activation.** A skill, policy or workflow stored here is not automatically discovered or enforced by Codex in another repository. Target runtimes must use a supported, verified activation path (`AGENTS.md` hierarchy, `.agents/skills`, plugin, MCP/config/managed policy, or another explicitly documented mechanism). See `SOURCE_OF_TRUTH.md` and `docs/decisions/openai-platform-alignment-2026-09-04.md`.
+
 ## Operating model
 
 1. GitHub is authoritative; inspect online state before acting.
@@ -22,14 +24,15 @@ Product repositories remain the source of truth for their own product code and p
 4. Shared artifacts are promoted only after provenance and contract review.
 5. Completion requires evidence; documentation alone does not establish runtime readiness.
 6. Non-trivial changes use a branch and pass the repository quality gate.
+7. For current external APIs/SDKs/platforms, verify current official documentation during the task rather than relying on historical examples or agent memory.
 
 See `AGENTS.md` for instruction precedence, security, cleanup and multi-agent rules.
-See `SOURCE_OF_TRUTH.md` for canonical/reference boundaries.
+See `SOURCE_OF_TRUTH.md` for canonical/reference/runtime boundaries.
 
 ## Structure
 
 - `agents/` — canonical contracted agent definitions.
-- `skills/` — canonical native skills (`SKILL.md` + provenance where applicable).
+- `skills/` — canonical native-skill source artifacts (`SKILL.md` + provenance where applicable); target-runtime discovery must be separately verified.
 - `workflows/` — canonical global work procedures and gates.
 - `prompts/` — reusable canonical prompt assets.
 - `registry/` — machine-readable repositories, agents, skills, workflows and prompts.
@@ -46,11 +49,11 @@ See `SOURCE_OF_TRUTH.md` for canonical/reference boundaries.
 
 Machine-readable routing starts from:
 
-- `registry/repositories.json` — 16 repositories in the 2026-08-25 snapshot;
-- `registry/agents.json` — 5 active contracted agents;
-- `registry/skills.json` — 32 canonical skills;
-- `registry/workflows.json` — 5 active global workflows/gates;
-- `registry/prompts.json` — 2 active canonical prompts.
+- `registry/repositories.json` — repository inventory snapshot;
+- `registry/agents.json` — active contracted agents;
+- `registry/skills.json` — canonical skills;
+- `registry/workflows.json` — active global workflows/gates;
+- `registry/prompts.json` — active canonical prompts.
 
 An artifact under a canonical directory is not allowed to silently bypass its registry where CI enforcement exists.
 
@@ -69,12 +72,9 @@ GitHub Actions compiles and executes all validators on pull requests and pushes 
 
 ## Current migration status
 
-- 32 canonical skills are registered: 30 promoted with migration provenance plus 2 pre-existing bootstrap skills (`repository-inventory-skill` and `skills-normalization-skill`), now normalized to the canonical contract style.
-- 5 canonical agents are active: inventory, organizer, repository-quality auditor, security auditor and documentation-consistency auditor.
-- 5 canonical global workflows are active: inventory, normalization, repository quality gate, agent-definition review and security release gate.
-- 2 canonical prompts are registered and bounded by the same trust/cleanup rules.
-- remaining imported agent/workflow candidates stay `HOLD` until their contracts, global/local scope and overlap are resolved.
-- historical/reference copies under `sources/**` are retained deliberately.
-- the two historical `codex-workflow-router` variants remain reference-only: the feature variant adds a local STAW/Repetytorium mode to the global router, and neither variant may be promoted until all referenced capabilities can be resolved against canonical registries.
+- Canonical skill, agent, workflow and prompt counts are defined by the machine-readable registries; do not copy stale counts into downstream repositories.
+- Imported candidates remain `HOLD` until their contracts, global/local scope and overlap are resolved.
+- Historical/reference copies under `sources/**` are retained deliberately.
+- Conflicting router/reference variants remain reference-only until referenced capabilities can be resolved against canonical registries.
 
-The current priority is executable governance, registry completeness, conflict consolidation and evidence-backed promotion—not increasing artifact count for its own sake.
+The current priority is executable governance, registry completeness, conflict consolidation, correct runtime activation and evidence-backed promotion—not increasing artifact count for its own sake.

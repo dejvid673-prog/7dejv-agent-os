@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-08-25",
+  "snapshot_date": "2026-09-04",
   "owner": "dejvid673-prog",
   "repositories": [
     {"name":"7dejv-agent-os","visibility":"public","status":"active","classification":"canonical-control-plane","default_branch":"main"},
@@ -9,14 +9,17 @@
     {"name":"7dejv.os","visibility":"public","status":"active","classification":"primary-migration-source","default_branch":"main"},
     {"name":"7dejv-staw-expert","visibility":"private","status":"active","classification":"primary-migration-source","default_branch":"main"},
     {"name":"airtable-agent","visibility":"public","status":"active","classification":"primary-migration-source","default_branch":"main"},
+    {"name":"7dejv-mcp","visibility":"private","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"7dejv-prestashop","visibility":"private","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"7dejv-prestashop-resources","visibility":"public","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"allegro","visibility":"public","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
+    {"name":"Explorer--najciekawsze","visibility":"public","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"repetytorium","visibility":"public","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"ideas","visibility":"public","status":"active","classification":"product-or-domain-repository","default_branch":"main"},
     {"name":"Agent-repo","visibility":"private","status":"review","classification":"reference-low-signal","default_branch":"main"},
     {"name":"7dejv-dawid","visibility":"private","status":"review","classification":"reference-low-signal","default_branch":"main"},
     {"name":"bufor-github","visibility":"public","status":"review","classification":"reference-low-signal","default_branch":"main"},
+    {"name":"WATAHA","visibility":"public","status":"review","classification":"reference-low-signal","default_branch":"main"},
     {"name":"n8n","visibility":"public","status":"empty","classification":"empty","default_branch":"main"},
     {"name":"n8n_7d","visibility":"public","status":"empty","classification":"empty","default_branch":"main"}
   ]

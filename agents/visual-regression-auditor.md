@@ -1,6 +1,6 @@
 # Visual Regression Auditor
 
-Status: canonical
+Status: `canonical`
 
 ## Mission
 

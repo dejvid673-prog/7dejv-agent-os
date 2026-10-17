@@ -1,6 +1,6 @@
 # Project Completion Workflow
 
-Status: canonical
+Status: `canonical`
 
 ## Goal
 
@@ -14,41 +14,44 @@ Drive multi-stage projects from defined scope to verified completion without los
 2. `DEFINE`
    - define scope IN/OUT;
    - create measurable acceptance criteria and feature matrix;
-   - establish Definition of Done and applicable gates.
-3. `BASELINE`
-   - record current verified commit/ref;
-   - record critical existing behavior and UI that must be preserved;
-   - capture available test/screenshot/runtime evidence.
-4. `PLAN_STAGE`
-   - split work into the smallest coherent stage that can end in a verifiable result;
-   - define change contract and rollback point.
-5. `IMPLEMENT`
-   - execute only the approved stage scope;
-   - record changed files and technical decisions.
-6. `TECH_VERIFY`
-   - run applicable build/lint/static/unit/integration/smoke checks;
-   - record real execution evidence.
-7. `VISUAL_VERIFY`
-   - when UI is involved, run Visual Regression Auditor against baseline/specification and required states.
-8. `REGRESSION_VERIFY`
-   - recheck all `MUST PRESERVE` behavior and previously accepted criteria affected by the change.
-9. `UPDATE_STATE`
-   - update project state, feature matrix, blockers, regressions and evidence.
-10. `COMPLETION_GATE`
-   - if every required criterion is `PASS` and Definition of Done passes -> `DONE`;
-   - otherwise generate the next repair/implementation batch and return to `PLAN_STAGE`;
-   - if a concrete external blocker prevents continuation -> `BLOCKED` with evidence.
+   - identify explicit approvals and stop conditions.
+3. `PLAN`
+   - create a staged implementation/verification plan;
+   - order work so high-risk dependencies are proven early.
+4. `EXECUTE`
+   - implement the smallest complete stage;
+   - preserve known-good behavior;
+   - record commands/actions and changed files.
+5. `VERIFY`
+   - run deterministic checks first;
+   - run functional/runtime verification where required;
+   - compare actual behavior against acceptance criteria.
+6. `AUDIT`
+   - review architecture, security, regressions, documentation and source-of-truth consistency;
+   - classify unresolved findings.
+7. `REPAIR`
+   - fix verified defects within scope;
+   - re-run affected verification.
+8. `COMPLETE`
+   - confirm all acceptance criteria have evidence;
+   - update durable project state/handoff;
+   - report remaining risks and next action.
 
-## Rules
+## Evidence contract
 
-- A report of defects is not completion; defects become input to the next repair batch.
-- No stage may silently remove an earlier accepted criterion.
-- Scope changes require an explicit decision and feature-matrix update.
-- Conversation boundaries do not change project state.
-- Every stage must end with a repository-resident state update for multi-stage projects.
+A stage is not complete because an agent says it is complete. Evidence must match the claim, for example:
 
-## Recommended routing
+- static/type/build checks for compile/readiness claims;
+- automated tests for tested behavior;
+- runtime/API/browser evidence for connected/functional claims;
+- diff/commit/artifact for repository-change claims.
 
-`Coordinator -> Product/Domain Architect -> UX/UI (if applicable) -> Executor -> technical checks -> Visual Regression Auditor (if applicable) -> QA/domain audit -> Project Completion Owner`
+If the required evidence cannot be produced, report `HOLD` or `BLOCKED` rather than `PASS`.
 
-Specialists such as PrestaShop, Allegro, Security, Product or Compliance agents are inserted only when their domain is relevant.
+## Parallel work
+
+Use independent branches/worktrees for concurrent code changes. Parallel agents may analyze/review the same source, but only one owner should mutate a given implementation scope at a time unless the work is explicitly partitioned.
+
+## Completion gate
+
+Return `PASS` only when every in-scope acceptance criterion has evidence and no blocking finding remains. Otherwise return `HOLD` or `BLOCKED` with the exact missing evidence or blocker.
