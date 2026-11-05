@@ -11,8 +11,8 @@ Status: CANDIDATE FOR REVIEW (canonical registry entry proposed in this PR; NOT 
 Use for a historical Allegro Ads audit, offer/group/campaign performance diagnosis, profitable CPC threshold calculation, or controlled campaign experiment recommendation. This is a **read-only / PROPOSE** skill, not an Ads API client or automation.
 
 ## Authoritative references
-- Product-specific rules: \`dejvid673-prog/allegro/AGENTS.md\`, \`BUSINESS_RULES.md\`, and \`docs/08-operations/ads-and-promotion.md\`.
-- Technical and data contract: \`dejvid673-prog/allegro/docs/08-operations/allegro-ads-profit-analytics-2026-11-05.md\`.
+- Product-specific rules: `dejvid673-prog/allegro/AGENTS.md`, `BUSINESS_RULES.md`, and `docs/08-operations/ads-and-promotion.md`.
+- Technical and data contract: `dejvid673-prog/allegro/docs/08-operations/allegro-ads-profit-analytics-2026-11-05.md`.
 - Allegro official sources: https://help.allegro.com/pl/sell/a/jakie-statystyki-moge-sprawdzac-w-panelu-reklamowym-allegro-ads-1nPyDZo9qUe , https://developer.allegro.pl/news/zamowienia-dodalismy-informacje-o-atrybucji-allegro-ads-Pg8glADgbT5 , https://allegro.pl/regulaminy/regulamin-allegro-ads-a1EnOgMxWfa .
 - Verify changed regulations, scope, fee tables and metrics anew before a real decision (last research: 2026-11-05).
 
@@ -20,7 +20,7 @@ Use for a historical Allegro Ads audit, offer/group/campaign performance diagnos
 Required for a money-backed evaluation:
 1. Account identifier, marketplace, currency, time zone, date range, export timestamp, report granularity, advertised metric basis (gross/net), and source file SHA or reference.
 2. Ads spend, impressions, clicks, attributed revenue and attributed orders/units **as individually available**, with campaign/group/offer/placement IDs where the export actually supplies them.
-3. SKU mapping, gross paid selling price, discounts/refunds, purchase/production cost, inbound transport, commission and fixed Allegro fees, actual shipping/Smart/surcharges, packaging/labor, returns reserve and applicable taxes; each cost has status \`KNOWN\`, \`ZERO_CONFIRMED\`, \`NOT_APPLICABLE\`, or \`UNKNOWN\`, plus evidence.
+3. SKU mapping, gross paid selling price, discounts/refunds, purchase/production cost, inbound transport, commission and fixed Allegro fees, actual shipping/Smart/surcharges, packaging/labor, returns reserve and applicable taxes; each cost has status `KNOWN`, `ZERO_CONFIRMED`, `NOT_APPLICABLE`, or `UNKNOWN`, plus evidence.
 4. Explicit attribution definition and cohort period. Do not invent order IDs or infer item-to-click relationships.
 
 Optional: search terms/planner data, seasonality, history of bids, budget report, placement, organic comparison, attribution flag from checkout-form line items, competitor observations.
@@ -28,7 +28,7 @@ Optional: search terms/planner data, seasonality, history of bids, budget report
 ## Dependencies and permission model
 Allowed: official seller UI reports/XLSX, authorized order REST GET operations, verified local cost records, offline deterministic calculations, GitHub docs, human-provided sources. No credential collection in prompt. Read-only access sufficient. No direct Ads REST write, session scraping, browser interaction, account connection, spend, campaign creation, or silent changes.
 
-API caveat: \`allegro:api:campaigns\` in the public auth tutorial is **not** a general Ads campaign-management permission. Allegro Ads REST access is restricted by its regulations; check actual account eligibility. The \`lineItems[].allegroAds.attributed\` boolean is attribution evidence, not campaign ID, cost-per-order, or independent proof of incrementality.
+API caveat: `allegro:api:campaigns` in the public auth tutorial is **not** a general Ads campaign-management permission. Allegro Ads REST access is restricted by its regulations; check actual account eligibility. The `lineItems[].allegroAds.attributed` boolean is attribution evidence, not campaign ID, cost-per-order, or independent proof of incrementality.
 
 ## Procedure
 1. **Source check:** read existing 7DEJV business rules and current official rules. Record source URL/date, account, import and KPI bases. Verify that revenue and cost denominators match; default no invented VAT deduction.
@@ -43,11 +43,11 @@ API caveat: \`allegro:api:campaigns\` in the public auth tutorial is **not** a g
    - TACoS = ads_spend/all-channel-or-account-revenue for the **same account/period/currency**; mark differing scopes.
 5. **Attribution boundaries:** distinguish sales credited by Ads from proven incremental sales. Do not add attributed order revenue to gross order revenue again. For incomplete 7-day windows show PROVISIONAL and avoid definitive pause decisions.
 6. **Diagnose:** separate traffic/CTR, CPC, CVR, offer conversion, placement, stock, seasonality, price and margin issues. Assess sample size and uncertainty before recommending changes.
-7. **Propose not execute:** classify candidate actions \`KEEP\`, \`TEST\`, \`LOWER_BID\`, \`PAUSE_CANDIDATE\`, \`SCALE_CANDIDATE\`, \`HOLD_DATA\` with metric evidence, expected loss ceiling, manual approval, rollback and review date. Neither recommend positive ROI solely on ROAS nor claim causal uplift from credited sales.
+7. **Propose not execute:** classify candidate actions `KEEP`, `TEST`, `LOWER_BID`, `PAUSE_CANDIDATE`, `SCALE_CANDIDATE`, `HOLD_DATA` with metric evidence, expected loss ceiling, manual approval, rollback and review date. Neither recommend positive ROI solely on ROAS nor claim causal uplift from credited sales.
 8. **Quality gate:** recalculate independently from raw sums, reconcile account totals and refund treatment, check negative/zero/unknown values, ensure all report claims carry sources and limitations.
 
 ## Output contract
-Produce: scope/date/data freshness; source inventory; KPI definition and bases; per-account/campaign/group/offer table when observed; revenue and cost bridge with status flags; ranked actions with evidence and approval gates; caveats; reproducible formulas; \`PASS/HOLD/BLOCKED\` status. Missing critical cost → HOLD_DATA, not fabricated profit. When no actual Ads data, output readiness checklist and mock-only example, not fictitious performance.
+Produce: scope/date/data freshness; source inventory; KPI definition and bases; per-account/campaign/group/offer table when observed; revenue and cost bridge with status flags; ranked actions with evidence and approval gates; caveats; reproducible formulas; `PASS/HOLD/BLOCKED` status. Missing critical cost → HOLD_DATA, not fabricated profit. When no actual Ads data, output readiness checklist and mock-only example, not fictitious performance.
 
 ## Errors and stop conditions
 - Missing permission, unauthorized access, scope conflict → BLOCKED integration; offline analysis can continue.
