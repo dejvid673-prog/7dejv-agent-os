@@ -1,6 +1,6 @@
 # Allegro Ads Profit Analysis Workflow
 
-Status: \`canonical\`
+Status: `canonical`
 Scope: global analytical workflow; STAW EXPERT cost specifics remain in product repository.
 Research verified: 2026-11-05. Runtime activation: NOT VERIFIED.
 
@@ -25,7 +25,7 @@ Run for an Allegro Ads monthly/weekly audit, prior to bid/budget changes, or whe
 | 7 | AI/CODE | later export and history of changes | compare pre/post and reconcile | evaluation report | never claim causality solely from attribution |
 
 ## Guardrails
-- NO Ads REST API use without explicit permission and verified technical scope; \`allegro:api:campaigns\` is not generic Ads access.
+- NO Ads REST API use without explicit permission and verified technical scope; `allegro:api:campaigns` is not generic Ads access.
 - NO campaign/budget/CPC changes in this workflow. App/browser automation must be separately designed and approved.
 - NO production credentials/PII in Git or AI reports.
 - A campaign can have a high ROAS and negative post-Ads contribution. Cost unknown != zero.
@@ -42,4 +42,4 @@ Duplicate campaign and offer totals → keep separate report grains.
 Historical metric definition changed → start a new versioned comparison.
 
 ## Test record / acceptance
-Before claiming PASS use a zero-click fixture, a no-cost fixture, a duplicated-export fixture, a paid-order/refund example and a real-data reconciliation. An unexecuted test stays NOT RUN. Record refs, commands, results and reconciliation delta. Skill: \`skills/7dejv-allegro-ads-profit-analyst/SKILL.md\`.
+Before claiming PASS use a zero-click fixture, a no-cost fixture, a duplicated-export fixture, a paid-order/refund example and a real-data reconciliation. An unexecuted test stays NOT RUN. Record refs, commands, results and reconciliation delta. Skill: `skills/7dejv-allegro-ads-profit-analyst/SKILL.md`.
